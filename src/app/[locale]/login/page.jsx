@@ -1,9 +1,9 @@
 "use client";
 
 import { use, useMemo, useState } from "react";
-import { signIn } from "next-auth/react";
 import { ShieldCheck, QrCode, MessageSquare, Sparkles } from "lucide-react";
 import { useRouter, Link } from "@/i18n/routing";
+import { authenticateUser, setCurrentUser } from "@/lib/auth-utils";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,33 +17,15 @@ const highlights = [
 export default function LoginPage({ params }) {
   const { locale } = use(params);
   const router = useRouter();
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const isDisabled = useMemo(
-    () => loading || !email.trim() || !password.trim(),
-    [loading, email, password],
+    () => loading || !username.trim() || !password.trim(),
+    [loading, username, password],
   );
-
-  const parseAuthError = (errorString) => {
-    if (!errorString) return "Invalid email or password";
-    
-    // Handle generic NextAuth errors
-    if (errorString === "CredentialsSignin") {
-      return "Invalid email or password";
-    }
-    
-    // Try to parse JSON error messages from backend
-    try {
-      const parsed = JSON.parse(errorString);
-      return parsed.message || errorString;
-    } catch {
-      // If not JSON, return the error message as-is
-      return errorString;
-    }
-  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -51,23 +33,27 @@ export default function LoginPage({ params }) {
     setLoading(true);
 
     try {
-      const result = await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
-        callbackUrl: `/dashboard`,
-      });
+      const user = authenticateUser(username, password);
 
-      if (result?.error) {
-        setError(parseAuthError(result.error));
+      if (!user) {
+        setError("Invalid username or password");
         setLoading(false);
         return;
       }
 
-      if (result?.ok) {
+      // Save user to localStorage
+      setCurrentUser(user);
+
+      // Redirect based on role
+      if (user.role === 'agent') {
+        router.push(`/agent/dashboard`);
+      } else if (user.role === 'merchant') {
+        router.push(`/merchant/dashboard`);
+      } else {
         router.push(`/dashboard`);
-        router.refresh();
       }
+
+      router.refresh();
     } catch (err) {
       setError(err?.message || "Something went wrong. Please try again.");
       setLoading(false);
@@ -87,7 +73,7 @@ export default function LoginPage({ params }) {
             Sign in to launch QR feedback, coupons, and WhatsApp nudges.
           </h1>
           <p className="max-w-xl text-base text-muted-foreground">
-            Secure, multi-tenant workspace for super admins, agents, and merchants.
+            Secure, multi-tenant workspace for agents and merchants.
             View dashboards, issue coupons, and track customer feedback from one place.
           </p>
           <div className="grid gap-3 sm:grid-cols-3">
@@ -116,22 +102,22 @@ export default function LoginPage({ params }) {
               </p>
               <h2 className="text-2xl font-bold text-foreground">Sign in</h2>
               <p className="text-sm text-muted-foreground">
-                Use your admin, agent, or merchant credentials to continue.
+                Use your agent or merchant credentials to continue.
               </p>
             </div>
 
             <form className="space-y-4" onSubmit={handleSubmit} noValidate>
               <div className="space-y-2">
                 <label className="text-sm font-medium text-foreground">
-                  Email
+                  Username
                 </label>
                 <Input
-                  type="email"
-                  placeholder="you@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  type="text"
+                  placeholder="admin or merchant"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                   required
-                  autoComplete="email"
+                  autoComplete="username"
                 />
               </div>
 
@@ -160,19 +146,26 @@ export default function LoginPage({ params }) {
               </Button>
             </form>
 
-            <div className="mt-6 flex items-center justify-between text-sm text-muted-foreground">
-              <Link
-                href="/login"
-                className="underline underline-offset-4 hover:text-foreground"
-              >
-                Forgot password? (coming soon)
-              </Link>
-              <Link
-                href="/register/agent"
-                className="font-semibold text-primary hover:text-primary/80"
-              >
-                Register as agent
-              </Link>
+            <div className="mt-6 space-y-3">
+              <p className="text-xs text-muted-foreground bg-muted rounded-lg p-3">
+                <strong>Demo Credentials:</strong><br />
+                Agent: <code className="font-mono">admin / admin123</code><br />
+                Merchant: <code className="font-mono">merchant / merchant123</code>
+              </p>
+              <div className="flex items-center justify-between text-sm text-muted-foreground">
+                <Link
+                  href="/login"
+                  className="underline underline-offset-4 hover:text-foreground"
+                >
+                  Forgot password?
+                </Link>
+                <Link
+                  href="/register/agent"
+                  className="font-semibold text-primary hover:text-primary/80"
+                >
+                  Register as agent
+                </Link>
+              </div>
             </div>
           </div>
         </div>

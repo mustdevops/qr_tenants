@@ -1,0 +1,156 @@
+"use client";
+
+import { use } from "react";
+import { ArrowLeft, Download } from "lucide-react";
+import { StatusBadge } from "@/components/common/status-badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
+import Link from "next/link";
+import { QRCodeSVG } from "qrcode.react";
+
+export default function MerchantCouponDetailContainer({ params }) {
+    const { id } = use(params);
+
+    // Dummy batch data
+    const batch = {
+        id,
+        name: "Summer Special",
+        discount: "20%",
+        quantity: 500,
+        used: 125,
+        status: "active",
+        created: "2024-06-01",
+        validUntil: "2024-12-31",
+    };
+
+    // Dummy serial codes
+    const serialCodes = [
+        { code: "SUM-8X92", status: "used", customer: "John Doe", usedDate: "2024-06-02" },
+        { code: "SUM-3A7B", status: "used", customer: "Jane Smith", usedDate: "2024-06-01" },
+        { code: "SUM-2C4D", status: "unused", customer: "-", usedDate: "-" },
+        { code: "SUM-9E1F", status: "unused", customer: "-", usedDate: "-" },
+        { code: "SUM-5G6H", status: "unused", customer: "-", usedDate: "-" },
+    ];
+
+    return (
+        <div className="space-y-6">
+            <div className="flex items-center gap-4">
+                <Link href="/en/merchant/coupons">
+                    <Button variant="ghost" size="icon">
+                        <ArrowLeft className="h-4 w-4" />
+                    </Button>
+                </Link>
+                <div>
+                    <h1 className="text-3xl font-bold">{batch.name}</h1>
+                    <p className="text-muted-foreground">Batch Details & Serial Codes</p>
+                </div>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-3">
+                {/* Info Card */}
+                <Card className="md:col-span-2">
+                    <CardHeader>
+                        <CardTitle>Batch Information</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <p className="text-sm text-muted-foreground">Status</p>
+                                <div className="mt-1">
+                                    <StatusBadge status={batch.status} />
+                                </div>
+                            </div>
+                            <div>
+                                <p className="text-sm text-muted-foreground">Discount</p>
+                                <p className="font-medium text-lg">{batch.discount}</p>
+                            </div>
+                            <div>
+                                <p className="text-sm text-muted-foreground">Created Date</p>
+                                <p className="font-medium">{batch.created}</p>
+                            </div>
+                            <div>
+                                <p className="text-sm text-muted-foreground">Valid Untill</p>
+                                <p className="font-medium">{batch.validUntil}</p>
+                            </div>
+                        </div>
+
+                        <div className="mt-6 pt-6 border-t">
+                            <div className="flex justify-between items-center mb-2">
+                                <span className="text-sm font-medium">Usage Progress</span>
+                                <span className="text-sm text-muted-foreground">{batch.used} / {batch.quantity} codes used</span>
+                            </div>
+                            <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                                <div
+                                    className="h-full bg-primary"
+                                    style={{ width: `${(batch.used / batch.quantity) * 100}%` }}
+                                />
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                {/* QR Code */}
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Master QR Code</CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex flex-col items-center">
+                        <div className="bg-white p-4 rounded-lg shadow-sm mb-4">
+                            <QRCodeSVG value={`https://qrscanner.com/claim/${batch.id}`} size={150} />
+                        </div>
+                        <p className="text-sm text-center text-muted-foreground mb-4">
+                            Scan to claim a random coupon from this batch
+                        </p>
+                        <Button variant="outline" className="w-full">
+                            <Download className="mr-2 h-4 w-4" />
+                            Download QR
+                        </Button>
+                    </CardContent>
+                </Card>
+            </div>
+
+            {/* Serial Codes */}
+            <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                    <CardTitle>Serial Codes</CardTitle>
+                    <Button variant="outline" size="sm">
+                        <Download className="mr-2 h-4 w-4" />
+                        Export CSV
+                    </Button>
+                </CardHeader>
+                <CardContent>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Code</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead>Redeemed By</TableHead>
+                                <TableHead>Redemption Date</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {serialCodes.map((code, index) => (
+                                <TableRow key={index}>
+                                    <TableCell className="font-mono">{code.code}</TableCell>
+                                    <TableCell>
+                                        <StatusBadge status={code.status} />
+                                    </TableCell>
+                                    <TableCell>{code.customer}</TableCell>
+                                    <TableCell>{code.usedDate}</TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </CardContent>
+            </Card>
+        </div>
+    );
+}

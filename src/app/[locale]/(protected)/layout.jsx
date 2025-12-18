@@ -1,27 +1,41 @@
-import { getServerSession } from "next-auth";
-import { redirect } from "next/navigation";
+"use client";
 
+import { useEffect, use } from "react";
+import { useRouter } from "next/navigation";
+import { getCurrentUser, getSubscriptionType } from "@/lib/auth-utils";
 import { AppSidebar } from "@/components/layouts/app-sidebar";
 import { LanguageSwitcher } from "@/components/common/language-switcher";
 import { LogoutButton } from "@/components/providers/logout-button";
+import { CreditDisplay } from "@/components/common/credit-display";
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Separator } from "@radix-ui/react-dropdown-menu";
-import { authOptions } from "@/lib/auth-options";
 
-export default async function ProtectedLayout({ children, params }) {
-  const session = await getServerSession(authOptions);
+export default function ProtectedLayout({ children, params }) {
+  const { locale } = use(params);
+  const router = useRouter();
+  const user = getCurrentUser();
+  const subscriptionType = getSubscriptionType();
 
-  if (!session) {
-    redirect(`/${params.locale}/login`);
+  useEffect(() => {
+    if (!user) {
+      router.push(`/${locale}/login`);
+    }
+  }, [user, router, locale]);
+
+  if (!user) {
+    return null; // Or a loading spinner
   }
+
+  // Dummy credit balance for merchants
+  const merchantCredits = 2500;
 
   return (
     <SidebarProvider>
-      <AppSidebar />
+      <AppSidebar role={user.role} subscriptionType={subscriptionType} />
       <SidebarInset>
         <div>
           <header className="flex items-center justify-between px-2 py-2 border-b border-sidebar-border bg-white">
@@ -31,6 +45,9 @@ export default async function ProtectedLayout({ children, params }) {
               <h1 className="text-xl font-bold text-gray-900">QR Scanner</h1>
             </div>
             <div className="flex items-center gap-4">
+              {user.role === 'merchant' && (
+                <CreditDisplay credits={merchantCredits} />
+              )}
               <LanguageSwitcher />
               <LogoutButton />
             </div>

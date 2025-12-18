@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { getSubscriptionType } from "@/lib/auth-utils";
+import { BreadcrumbComponent } from "@/components/common/breadcrumb-component";
 
 // Components for tabs
 // Note: We import the containers directly here to avoid circular dependencies or double wrapping
@@ -105,6 +106,14 @@ export default function MerchantDashboardContainer() {
                             </CardContent>
                         </Card>
                     </div>
+
+                    {/* Integrated Analytics */}
+                    <div className="pt-4">
+                        <div className="flex items-center justify-between mb-4">
+                            <h2 className="text-xl font-semibold italic text-gray-700">Analytics Overview</h2>
+                        </div>
+                        <MerchantAnalyticsContainer embedded={true} />
+                    </div>
                 </div>
             ),
         },
@@ -112,11 +121,6 @@ export default function MerchantDashboardContainer() {
             value: "coupons",
             label: "Coupon Batches",
             content: <MerchantCouponsListingContainer embedded={true} />,
-        },
-        {
-            value: "analytics",
-            label: "Detailed Analytics",
-            content: <MerchantAnalyticsContainer embedded={true} />,
         },
         {
             value: "wallet",
@@ -139,8 +143,13 @@ export default function MerchantDashboardContainer() {
         },
     ];
 
+    const breadcrumbData = [
+        { name: "Merchant Dashboard", url: "/en/merchant/dashboard" },
+    ];
+
     return (
         <div className="space-y-6">
+            <BreadcrumbComponent data={breadcrumbData} />
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-3xl font-bold">Merchant Dashboard</h1>

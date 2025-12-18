@@ -4,10 +4,17 @@ import { MessageSquare, Gift, Star, Calendar } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { BreadcrumbComponent } from "@/components/common/breadcrumb-component";
 
 export default function MerchantCampaignsContainer() {
+    const breadcrumbData = [
+        { name: "Merchant Dashboard", url: "/en/merchant/dashboard" },
+        { name: "Campaigns", url: "/en/merchant/campaigns" },
+    ];
+
     return (
         <div className="space-y-6">
+            <BreadcrumbComponent data={breadcrumbData} />
             <div>
                 <h1 className="text-3xl font-bold">Campaign Automation</h1>
                 <p className="text-muted-foreground">Automate your customer engagement and marketing</p>

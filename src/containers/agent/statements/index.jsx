@@ -3,14 +3,10 @@
 import { FileText, Download, Calendar } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
+import { BreadcrumbComponent } from "@/components/common/breadcrumb-component";
+import { DataTable } from "@/components/common/data-table";
+import TableToolbar from "@/components/common/table-toolbar";
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 
 export default function AgentStatementsContainer() {
@@ -23,8 +19,48 @@ export default function AgentStatementsContainer() {
         { id: 5, month: "January 2024", totalEarnings: 3200, commission: 400, downloads: 4 },
     ];
 
+    const [page, setPage] = useState(0);
+    const [pageSize, setPageSize] = useState(10);
+    const [search, setSearch] = useState("");
+
+    const filteredStatements = statements.filter(item =>
+        item.month.toLowerCase().includes(search.toLowerCase())
+    );
+
+    const paginatedData = filteredStatements.slice(page * pageSize, (page + 1) * pageSize);
+
+    const columns = [
+        { accessorKey: "month", header: "Month", cell: ({ row }) => <span className="font-medium">{row.original.month}</span> },
+        {
+            accessorKey: "totalEarnings",
+            header: "Total Earnings",
+            cell: ({ row }) => `$${row.original.totalEarnings.toLocaleString()}`
+        },
+        {
+            accessorKey: "commission",
+            header: "Commission",
+            cell: ({ row }) => `$${row.original.commission.toLocaleString()}`
+        },
+        {
+            id: "actions",
+            header: "Actions",
+            cell: ({ row }) => (
+                <Button variant="outline" size="sm" className="gap-2">
+                    <Download className="h-4 w-4" />
+                    Download PDF
+                </Button>
+            )
+        }
+    ];
+
+    const breadcrumbData = [
+        { name: "Agent Dashboard", url: "/en/agent/dashboard" },
+        { name: "Financial Statements", url: "/en/agent/statements" },
+    ];
+
     return (
         <div className="space-y-6">
+            <BreadcrumbComponent data={breadcrumbData} />
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-3xl font-bold">Financial Statements</h1>
@@ -70,31 +106,19 @@ export default function AgentStatementsContainer() {
                     <CardTitle>Previous Statements</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Month</TableHead>
-                                <TableHead>Total Earnings</TableHead>
-                                <TableHead>Commission</TableHead>
-                                <TableHead>Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {statements.map((statement) => (
-                                <TableRow key={statement.id}>
-                                    <TableCell className="font-medium">{statement.month}</TableCell>
-                                    <TableCell>${statement.totalEarnings.toLocaleString()}</TableCell>
-                                    <TableCell>${statement.commission.toLocaleString()}</TableCell>
-                                    <TableCell>
-                                        <Button variant="outline" size="sm" className="gap-2">
-                                            <Download className="h-4 w-4" />
-                                            Download PDF
-                                        </Button>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
+                    <TableToolbar
+                        placeholder="Search statements..."
+                        onSearchChange={setSearch}
+                    />
+                    <DataTable
+                        data={paginatedData}
+                        columns={columns}
+                        page={page}
+                        pageSize={pageSize}
+                        total={filteredStatements.length}
+                        setPage={setPage}
+                        setPageSize={setPageSize}
+                    />
                 </CardContent>
             </Card>
         </div>

@@ -4,14 +4,10 @@ import { RefreshCw, Play } from "lucide-react";
 import { StatusBadge } from "@/components/common/status-badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
+import { BreadcrumbComponent } from "@/components/common/breadcrumb-component";
+import { DataTable } from "@/components/common/data-table";
+import TableToolbar from "@/components/common/table-toolbar";
+import { useState } from "react";
 
 export default function AgentCouponSyncContainer() {
     // Dummy sync data
@@ -23,8 +19,48 @@ export default function AgentCouponSyncContainer() {
         { id: 5, merchant: "Book Shop", items: 75, status: "completed", date: "2024-05-30 04:10 PM" },
     ];
 
+    const [page, setPage] = useState(0);
+    const [pageSize, setPageSize] = useState(10);
+    const [search, setSearch] = useState("");
+
+    const filteredHistory = syncHistory.filter(item =>
+        item.merchant.toLowerCase().includes(search.toLowerCase())
+    );
+
+    const paginatedData = filteredHistory.slice(page * pageSize, (page + 1) * pageSize);
+
+    const columns = [
+        { accessorKey: "merchant", header: "Merchant" },
+        {
+            accessorKey: "items",
+            header: "Items Synced",
+            cell: ({ row }) => `${row.original.items} codes`
+        },
+        {
+            accessorKey: "status",
+            header: "Status",
+            cell: ({ row }) => <StatusBadge status={row.original.status} />
+        },
+        { accessorKey: "date", header: "Date & Time" },
+        {
+            id: "actions",
+            header: "Actions",
+            cell: ({ row }) => row.original.status === "failed" && (
+                <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700">
+                    <Play className="h-4 w-4 mr-1" /> Retry
+                </Button>
+            )
+        }
+    ];
+
+    const breadcrumbData = [
+        { name: "Agent Dashboard", url: "/en/agent/dashboard" },
+        { name: "Coupon Sync", url: "/en/agent/coupon-sync" },
+    ];
+
     return (
         <div className="space-y-6">
+            <BreadcrumbComponent data={breadcrumbData} />
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-3xl font-bold">Coupon Sync Management</h1>
@@ -63,36 +99,19 @@ export default function AgentCouponSyncContainer() {
                     <CardTitle>Sync History</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Merchant</TableHead>
-                                <TableHead>Items Synced</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead>Date & Time</TableHead>
-                                <TableHead>Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {syncHistory.map((item) => (
-                                <TableRow key={item.id}>
-                                    <TableCell className="font-medium">{item.merchant}</TableCell>
-                                    <TableCell>{item.items} codes</TableCell>
-                                    <TableCell>
-                                        <StatusBadge status={item.status} />
-                                    </TableCell>
-                                    <TableCell>{item.date}</TableCell>
-                                    <TableCell>
-                                        {item.status === "failed" && (
-                                            <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700">
-                                                <Play className="h-4 w-4 mr-1" /> Retry
-                                            </Button>
-                                        )}
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
+                    <TableToolbar
+                        placeholder="Search sync history..."
+                        onSearchChange={setSearch}
+                    />
+                    <DataTable
+                        data={paginatedData}
+                        columns={columns}
+                        page={page}
+                        pageSize={pageSize}
+                        total={filteredHistory.length}
+                        setPage={setPage}
+                        setPageSize={setPageSize}
+                    />
                 </CardContent>
             </Card>
         </div>

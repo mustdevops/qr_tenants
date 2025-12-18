@@ -3,18 +3,12 @@
 import { useState } from "react";
 import { Plus, Search } from "lucide-react";
 import { StatusBadge } from "@/components/common/status-badge";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
+import { BreadcrumbComponent } from "@/components/common/breadcrumb-component";
+import { DataTable } from "@/components/common/data-table";
+import TableToolbar from "@/components/common/table-toolbar";
 
 export default function AgentMerchantsListingContainer() {
     const [searchTerm, setSearchTerm] = useState("");
@@ -28,14 +22,52 @@ export default function AgentMerchantsListingContainer() {
         { id: 5, name: "Book Shop", email: "books@example.com", status: "active", subscription: "annual", joinDate: "2024-04-18" },
     ];
 
-    const filteredMerchants = merchants.filter(
-        (merchant) =>
-            merchant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            merchant.email.toLowerCase().includes(searchTerm.toLowerCase())
+    const [page, setPage] = useState(0);
+    const [pageSize, setPageSize] = useState(10);
+    const [search, setSearch] = useState("");
+
+    const filteredMerchants = merchants.filter(item =>
+        item.name.toLowerCase().includes(search.toLowerCase()) ||
+        item.email.toLowerCase().includes(search.toLowerCase())
     );
+
+    const paginatedData = filteredMerchants.slice(page * pageSize, (page + 1) * pageSize);
+
+    const columns = [
+        { accessorKey: "name", header: "Name" },
+        { accessorKey: "email", header: "Email" },
+        {
+            accessorKey: "status",
+            header: "Status",
+            cell: ({ row }) => <StatusBadge status={row.original.status} />
+        },
+        {
+            accessorKey: "subscription",
+            header: "Subscription",
+            cell: ({ row }) => <StatusBadge status={row.original.subscription} />
+        },
+        { accessorKey: "joinDate", header: "Join Date" },
+        {
+            id: "actions",
+            header: "Actions",
+            cell: ({ row }) => (
+                <Link href={`/en/agent/merchants/${row.original.id}`}>
+                    <Button variant="outline" size="sm">
+                        View Details
+                    </Button>
+                </Link>
+            )
+        }
+    ];
+
+    const breadcrumbData = [
+        { name: "Agent Dashboard", url: "/en/agent/dashboard" },
+        { name: "Merchants Management", url: "/en/agent/merchants" },
+    ];
 
     return (
         <div className="space-y-6">
+            <BreadcrumbComponent data={breadcrumbData} />
             <div className="flex items-center justify-between">
                 <div>
                     <h1 className="text-3xl font-bold">Merchants Management</h1>
@@ -49,62 +81,22 @@ export default function AgentMerchantsListingContainer() {
 
             <Card>
                 <CardHeader>
-                    <div className="flex items-center justify-between">
-                        <CardTitle>All Merchants</CardTitle>
-                        <div className="relative w-64">
-                            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                placeholder="Search merchants..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="pl-8"
-                            />
-                        </div>
-                    </div>
+                    <CardTitle>All Merchants</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Name</TableHead>
-                                <TableHead>Email</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead>Subscription</TableHead>
-                                <TableHead>Join Date</TableHead>
-                                <TableHead>Actions</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {filteredMerchants.length > 0 ? (
-                                filteredMerchants.map((merchant) => (
-                                    <TableRow key={merchant.id}>
-                                        <TableCell className="font-medium">{merchant.name}</TableCell>
-                                        <TableCell>{merchant.email}</TableCell>
-                                        <TableCell>
-                                            <StatusBadge status={merchant.status} />
-                                        </TableCell>
-                                        <TableCell>
-                                            <StatusBadge status={merchant.subscription} />
-                                        </TableCell>
-                                        <TableCell>{merchant.joinDate}</TableCell>
-                                        <TableCell>
-                                            <Link href={`/en/agent/merchants/${merchant.id}`}>
-                                                <Button variant="outline" size="sm">
-                                                    View Details
-                                                </Button>
-                                            </Link>
-                                        </TableCell>
-                                    </TableRow>
-                                ))
-                            ) : (
-                                <TableRow>
-                                    <TableCell colSpan={6} className="text-center text-muted-foreground">
-                                        No merchants found
-                                    </TableCell>
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
+                    <TableToolbar
+                        placeholder="Search merchants..."
+                        onSearchChange={setSearch}
+                    />
+                    <DataTable
+                        data={paginatedData}
+                        columns={columns}
+                        page={page}
+                        pageSize={pageSize}
+                        total={filteredMerchants.length}
+                        setPage={setPage}
+                        setPageSize={setPageSize}
+                    />
                 </CardContent>
             </Card>
         </div>

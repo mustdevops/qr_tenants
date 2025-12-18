@@ -7,6 +7,7 @@ import { ChartWrapper } from "@/components/common/chart-wrapper";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { BreadcrumbComponent } from "@/components/common/breadcrumb-component";
 
 export default function AgentDashboardContainer() {
     // Dummy data
@@ -124,8 +125,13 @@ export default function AgentDashboardContainer() {
         },
     ];
 
+    const breadcrumbData = [
+        { name: "Agent Dashboard", url: "/en/agent/dashboard" },
+    ];
+
     return (
         <div className="space-y-6">
+            <BreadcrumbComponent data={breadcrumbData} />
             <div>
                 <h1 className="text-3xl font-bold">Agent Dashboard</h1>
                 <p className="text-muted-foreground">Welcome back! Here's your overview.</p>

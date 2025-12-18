@@ -5,6 +5,7 @@ import { TransactionTable } from "@/components/common/transaction-table";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { getSubscriptionType } from "@/lib/auth-utils";
+import { BreadcrumbComponent } from "@/components/common/breadcrumb-component";
 
 export default function MerchantWalletContainer({ embedded = false }) {
     const subscriptionType = getSubscriptionType();
@@ -24,8 +25,14 @@ export default function MerchantWalletContainer({ embedded = false }) {
         { credits: 5000, price: "$75", popular: false },
     ];
 
+    const breadcrumbData = [
+        { name: "Merchant Dashboard", url: "/en/merchant/dashboard" },
+        { name: "Wallet", url: "/en/merchant/wallet" },
+    ];
+
     return (
         <div className="space-y-6">
+            {!embedded && <BreadcrumbComponent data={breadcrumbData} />}
             {!embedded && (
                 <div>
                     <h1 className="text-3xl font-bold">Wallet & Credits</h1>

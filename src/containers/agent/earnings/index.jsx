@@ -4,14 +4,10 @@ import { DollarSign, TrendingUp, Award } from "lucide-react";
 import { KpiCard } from "@/components/common/kpi-card";
 import { ChartWrapper } from "@/components/common/chart-wrapper";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
+import { BreadcrumbComponent } from "@/components/common/breadcrumb-component";
+import { DataTable } from "@/components/common/data-table";
+import TableToolbar from "@/components/common/table-toolbar";
+import { useState } from "react";
 
 export default function AgentEarningsContainer() {
     // Dummy KPI data
@@ -40,8 +36,39 @@ export default function AgentEarningsContainer() {
         { merchant: "Book Shop", totalSales: 10000, commission: 1250, rate: "12.5%" },
     ];
 
+    const [page, setPage] = useState(0);
+    const [pageSize, setPageSize] = useState(10);
+    const [search, setSearch] = useState("");
+
+    const filteredBreakdown = commissionBreakdown.filter(item =>
+        item.merchant.toLowerCase().includes(search.toLowerCase())
+    );
+
+    const paginatedData = filteredBreakdown.slice(page * pageSize, (page + 1) * pageSize);
+
+    const columns = [
+        { accessorKey: "merchant", header: "Merchant", cell: ({ row }) => <span className="font-medium">{row.original.merchant}</span> },
+        {
+            accessorKey: "totalSales",
+            header: "Total Sales",
+            cell: ({ row }) => `$${row.original.totalSales.toLocaleString()}`
+        },
+        { accessorKey: "rate", header: "Commission Rate" },
+        {
+            accessorKey: "commission",
+            header: "Commission Earned",
+            cell: ({ row }) => <span className="text-green-600 font-semibold">${row.original.commission.toLocaleString()}</span>
+        },
+    ];
+
+    const breadcrumbData = [
+        { name: "Agent Dashboard", url: "/en/agent/dashboard" },
+        { name: "Earnings", url: "/en/agent/earnings" },
+    ];
+
     return (
         <div className="space-y-6">
+            <BreadcrumbComponent data={breadcrumbData} />
             <div>
                 <h1 className="text-3xl font-bold">Earnings</h1>
                 <p className="text-muted-foreground">Track your commission and earnings</p>
@@ -67,28 +94,19 @@ export default function AgentEarningsContainer() {
                     <CardTitle>Commission Breakdown by Merchant</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Merchant</TableHead>
-                                <TableHead>Total Sales</TableHead>
-                                <TableHead>Commission Rate</TableHead>
-                                <TableHead>Commission Earned</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {commissionBreakdown.map((item, index) => (
-                                <TableRow key={index}>
-                                    <TableCell className="font-medium">{item.merchant}</TableCell>
-                                    <TableCell>${item.totalSales.toLocaleString()}</TableCell>
-                                    <TableCell>{item.rate}</TableCell>
-                                    <TableCell className="text-green-600 font-semibold">
-                                        ${item.commission.toLocaleString()}
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
+                    <TableToolbar
+                        placeholder="Search merchants..."
+                        onSearchChange={setSearch}
+                    />
+                    <DataTable
+                        data={paginatedData}
+                        columns={columns}
+                        page={page}
+                        pageSize={pageSize}
+                        total={filteredBreakdown.length}
+                        setPage={setPage}
+                        setPageSize={setPageSize}
+                    />
                 </CardContent>
             </Card>
 

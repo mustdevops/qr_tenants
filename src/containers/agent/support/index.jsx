@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { BreadcrumbComponent } from "@/components/common/breadcrumb-component";
 
 export default function AgentSupportContainer() {
     const [selectedTicket, setSelectedTicket] = useState(null);
@@ -19,8 +20,14 @@ export default function AgentSupportContainer() {
         { id: 4, merchant: "Pet Store", subject: "Login trouble", status: "resolved", date: "2024-05-25", lastMessage: "Password reset worked, thanks!" },
     ];
 
+    const breadcrumbData = [
+        { name: "Agent Dashboard", url: "/en/agent/dashboard" },
+        { name: "Support", url: "/en/agent/support" },
+    ];
+
     return (
         <div className="space-y-6">
+            <BreadcrumbComponent data={breadcrumbData} />
             <div>
                 <h1 className="text-3xl font-bold">Support</h1>
                 <p className="text-muted-foreground">Manage merchant support tickets</p>

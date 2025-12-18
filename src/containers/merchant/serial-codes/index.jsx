@@ -4,16 +4,11 @@ import { useState } from "react";
 import { Search } from "lucide-react";
 import { StatusBadge } from "@/components/common/status-badge";
 import { ExportButton } from "@/components/common/export-button";
+import { BreadcrumbComponent } from "@/components/common/breadcrumb-component";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
+import { DataTable } from "@/components/common/data-table";
+import TableToolbar from "@/components/common/table-toolbar";
 import {
     Select,
     SelectContent,
@@ -24,6 +19,10 @@ import {
 
 export default function MerchantSerialCodesContainer() {
     const [searchTerm, setSearchTerm] = useState("");
+
+    // Dummy serial codes data
+    const [page, setPage] = useState(0);
+    const [pageSize, setPageSize] = useState(10);
 
     // Dummy serial codes data
     const serialCodes = [
@@ -41,8 +40,32 @@ export default function MerchantSerialCodesContainer() {
             item.customer.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    const paginatedData = filteredCodes.slice(page * pageSize, (page + 1) * pageSize);
+
+    const columns = [
+        {
+            accessorKey: "code",
+            header: "Serial Code",
+            cell: ({ row }) => <span className="font-mono font-medium">{row.original.code}</span>
+        },
+        { accessorKey: "batch", header: "Batch Name" },
+        {
+            accessorKey: "status",
+            header: "Status",
+            cell: ({ row }) => <StatusBadge status={row.original.status} />
+        },
+        { accessorKey: "customer", header: "Customer" },
+        { accessorKey: "date", header: "Used Date" },
+    ];
+
+    const breadcrumbData = [
+        { name: "Merchant Dashboard", url: "/en/merchant/dashboard" },
+        { name: "Serial Codes", url: "/en/merchant/serial-codes" },
+    ];
+
     return (
         <div className="space-y-6">
+            <BreadcrumbComponent data={breadcrumbData} />
             <div>
                 <h1 className="text-3xl font-bold">Serial Codes</h1>
                 <p className="text-muted-foreground">Search and manage all generated coupon codes</p>
@@ -50,65 +73,38 @@ export default function MerchantSerialCodesContainer() {
 
             <Card>
                 <CardHeader>
-                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <CardTitle>All Codes</CardTitle>
-                        <div className="flex gap-2">
-                            <div className="relative w-64">
-                                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                                <Input
-                                    placeholder="Search code or customer..."
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="pl-8"
-                                />
-                            </div>
-                            <Select defaultValue="all">
-                                <SelectTrigger className="w-[150px]">
-                                    <SelectValue placeholder="Status" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="all">All Status</SelectItem>
-                                    <SelectItem value="used">Used</SelectItem>
-                                    <SelectItem value="unused">Unused</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            <ExportButton />
-                        </div>
-                    </div>
+                    <CardTitle>All Codes</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Serial Code</TableHead>
-                                <TableHead>Batch Name</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead>Customer</TableHead>
-                                <TableHead>Used Date</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {filteredCodes.length > 0 ? (
-                                filteredCodes.map((item) => (
-                                    <TableRow key={item.id}>
-                                        <TableCell className="font-mono font-medium">{item.code}</TableCell>
-                                        <TableCell>{item.batch}</TableCell>
-                                        <TableCell>
-                                            <StatusBadge status={item.status} />
-                                        </TableCell>
-                                        <TableCell>{item.customer}</TableCell>
-                                        <TableCell>{item.date}</TableCell>
-                                    </TableRow>
-                                ))
-                            ) : (
-                                <TableRow>
-                                    <TableCell colSpan={5} className="text-center text-muted-foreground">
-                                        No codes found
-                                    </TableCell>
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
+                    <TableToolbar
+                        placeholder="Search code or customer..."
+                        onSearchChange={setSearchTerm}
+                        rightSlot={
+                            <div className="flex gap-2">
+                                <Select defaultValue="all">
+                                    <SelectTrigger className="w-[150px]">
+                                        <SelectValue placeholder="Status" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all">All Status</SelectItem>
+                                        <SelectItem value="used">Used</SelectItem>
+                                        <SelectItem value="unused">Unused</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <ExportButton />
+                            </div>
+                        }
+                    />
+                    <DataTable
+                        data={paginatedData}
+                        columns={columns}
+                        page={page}
+                        pageSize={pageSize}
+                        total={filteredCodes.length}
+                        setPage={setPage}
+                        setPageSize={setPageSize}
+                        style={{ marginTop: "1rem" }}
+                    />
                 </CardContent>
             </Card>
         </div>

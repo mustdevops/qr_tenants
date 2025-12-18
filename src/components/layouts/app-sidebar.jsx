@@ -105,11 +105,6 @@ export function AppSidebar({ role = "agent", subscriptionType = "temporary", ...
       url: "/merchant/lucky-draw",
       icon: Gift,
     },
-    {
-      title: "Analytics",
-      url: "/merchant/analytics",
-      icon: BarChart3,
-    },
     // Only show Customer Data for annual subscribers
     ...(subscriptionType === "annual" ? [{
       title: "Customer Data",

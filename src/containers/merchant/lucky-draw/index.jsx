@@ -5,15 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
+import { DataTable } from "@/components/common/data-table";
+import TableToolbar from "@/components/common/table-toolbar";
+import { useState } from "react";
 import { StatusBadge } from "@/components/common/status-badge";
+import { BreadcrumbComponent } from "@/components/common/breadcrumb-component";
 
 export default function MerchantLuckyDrawContainer() {
     // Dummy winners
@@ -23,8 +19,46 @@ export default function MerchantLuckyDrawContainer() {
         { id: 3, name: "Bob Johnson", prize: "Free Coffee", date: "2024-05-01", status: "expired" },
     ];
 
+    const [page, setPage] = useState(0);
+    const [pageSize, setPageSize] = useState(10);
+    const [search, setSearch] = useState("");
+
+    const filteredWinners = winners.filter(item =>
+        item.name.toLowerCase().includes(search.toLowerCase())
+    );
+
+    const paginatedData = filteredWinners.slice(page * pageSize, (page + 1) * pageSize);
+
+    const columns = [
+        {
+            accessorKey: "name",
+            header: "Winner Name",
+            cell: ({ row }) => (
+                <div className="font-medium flex items-center gap-2">
+                    <div className="h-6 w-6 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-600">
+                        <Trophy className="h-3 w-3" />
+                    </div>
+                    {row.original.name}
+                </div>
+            )
+        },
+        { accessorKey: "prize", header: "Prize" },
+        { accessorKey: "date", header: "Draw Date" },
+        {
+            accessorKey: "status",
+            header: "Status",
+            cell: ({ row }) => <StatusBadge status={row.original.status === "claimed" ? "completed" : "expired"} />
+        }
+    ];
+
+    const breadcrumbData = [
+        { name: "Merchant Dashboard", url: "/en/merchant/dashboard" },
+        { name: "Lucky Draw", url: "/en/merchant/lucky-draw" },
+    ];
+
     return (
         <div className="space-y-6">
+            <BreadcrumbComponent data={breadcrumbData} />
             <div>
                 <h1 className="text-3xl font-bold">Lucky Draw</h1>
                 <p className="text-muted-foreground">Run giveaways for your customers</p>
@@ -100,33 +134,19 @@ export default function MerchantLuckyDrawContainer() {
                     <CardTitle>Winners History</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Winner Name</TableHead>
-                                <TableHead>Prize</TableHead>
-                                <TableHead>Draw Date</TableHead>
-                                <TableHead>Status</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {winners.map((winner) => (
-                                <TableRow key={winner.id}>
-                                    <TableCell className="font-medium flex items-center gap-2">
-                                        <div className="h-6 w-6 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-600">
-                                            <Trophy className="h-3 w-3" />
-                                        </div>
-                                        {winner.name}
-                                    </TableCell>
-                                    <TableCell>{winner.prize}</TableCell>
-                                    <TableCell>{winner.date}</TableCell>
-                                    <TableCell>
-                                        <StatusBadge status={winner.status === "claimed" ? "completed" : "expired"} />
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
+                    <TableToolbar
+                        placeholder="Search winners..."
+                        onSearchChange={setSearch}
+                    />
+                    <DataTable
+                        data={paginatedData}
+                        columns={columns}
+                        page={page}
+                        pageSize={pageSize}
+                        total={filteredWinners.length}
+                        setPage={setPage}
+                        setPageSize={setPageSize}
+                    />
                 </CardContent>
             </Card>
         </div>

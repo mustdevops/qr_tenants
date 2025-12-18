@@ -6,14 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { StatusBadge } from "@/components/common/status-badge";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
+import { BreadcrumbComponent } from "@/components/common/breadcrumb-component";
+import { DataTable } from "@/components/common/data-table";
+import TableToolbar from "@/components/common/table-toolbar";
+import { useState } from "react";
 
 export default function MerchantAdsContainer() {
     // Dummy ads data
@@ -22,8 +18,43 @@ export default function MerchantAdsContainer() {
         { id: 2, campaign: "Weekend Special", type: "Sidebar Ad", budget: "$50", status: "completed", impressions: 890, clicks: 22 },
     ];
 
+    const [page, setPage] = useState(0);
+    const [pageSize, setPageSize] = useState(10);
+    const [search, setSearch] = useState("");
+
+    const filteredAds = activeAds.filter(item =>
+        item.campaign.toLowerCase().includes(search.toLowerCase())
+    );
+
+    const paginatedData = filteredAds.slice(page * pageSize, (page + 1) * pageSize);
+
+    const columns = [
+        {
+            accessorKey: "campaign",
+            header: "Campaign",
+            cell: ({ row }) => (
+                <div className="font-medium">
+                    {row.original.campaign}
+                    <span className="block text-xs text-muted-foreground">{row.original.type}</span>
+                </div>
+            )
+        },
+        {
+            accessorKey: "status",
+            header: "Status",
+            cell: ({ row }) => <StatusBadge status={row.original.status} />
+        },
+        { accessorKey: "clicks", header: "Clicks" },
+    ];
+
+    const breadcrumbData = [
+        { name: "Merchant Dashboard", url: "/en/merchant/dashboard" },
+        { name: "Ads & Promotions", url: "/en/merchant/ads" },
+    ];
+
     return (
         <div className="space-y-6">
+            <BreadcrumbComponent data={breadcrumbData} />
             <div>
                 <h1 className="text-3xl font-bold">Ads & Promotions</h1>
                 <p className="text-muted-foreground">Boost your visibility and reach new customers</p>
@@ -101,29 +132,19 @@ export default function MerchantAdsContainer() {
                             <CardTitle>Active Campaigns</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Campaign</TableHead>
-                                        <TableHead>Status</TableHead>
-                                        <TableHead>Clicks</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {activeAds.map((ad) => (
-                                        <TableRow key={ad.id}>
-                                            <TableCell className="font-medium">
-                                                {ad.campaign}
-                                                <span className="block text-xs text-muted-foreground">{ad.type}</span>
-                                            </TableCell>
-                                            <TableCell>
-                                                <StatusBadge status={ad.status} />
-                                            </TableCell>
-                                            <TableCell>{ad.clicks}</TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
+                            <TableToolbar
+                                placeholder="Search campaigns..."
+                                onSearchChange={setSearch}
+                            />
+                            <DataTable
+                                data={paginatedData}
+                                columns={columns}
+                                page={page}
+                                pageSize={pageSize}
+                                total={filteredAds.length}
+                                setPage={setPage}
+                                setPageSize={setPageSize}
+                            />
                         </CardContent>
                         <CardFooter>
                             <Button variant="ghost" size="sm" className="w-full">View All History</Button>

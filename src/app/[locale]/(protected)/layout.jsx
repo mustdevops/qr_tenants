@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, use } from "react";
+import { useEffect, use, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getCurrentUser, getSubscriptionType } from "@/lib/auth-utils";
 import { AppSidebar } from "@/components/layouts/app-sidebar";
@@ -19,6 +19,11 @@ export default function ProtectedLayout({ children, params }) {
   const router = useRouter();
   const user = getCurrentUser();
   const subscriptionType = getSubscriptionType();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!user) {
@@ -26,7 +31,7 @@ export default function ProtectedLayout({ children, params }) {
     }
   }, [user, router, locale]);
 
-  if (!user) {
+  if (!mounted || !user) {
     return null; // Or a loading spinner
   }
 
@@ -38,14 +43,14 @@ export default function ProtectedLayout({ children, params }) {
       <AppSidebar role={user.role} subscriptionType={subscriptionType} />
       <SidebarInset>
         <div>
-          <header className="flex items-center justify-between px-2 py-2 border-b border-sidebar-border bg-white">
+          <header className="flex items-center justify-between px-6 py-3 border-b border-sidebar-border bg-white">
             <div className="flex items-center gap-4">
               <SidebarTrigger className="hover:bg-gray-100 rounded-lg p-2 transition-all duration-200" />
               <Separator orientation="vertical" className="h-6 bg-gray-300" />
               <h1 className="text-xl font-bold text-gray-900">QR Scanner</h1>
             </div>
             <div className="flex items-center gap-4">
-              {user.role === 'merchant' && (
+              {user.role === "merchant" && (
                 <CreditDisplay credits={merchantCredits} />
               )}
               <LanguageSwitcher />
@@ -53,9 +58,8 @@ export default function ProtectedLayout({ children, params }) {
             </div>
           </header>
         </div>
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-3">{children}</div>
+        <div className="flex flex-1 flex-col gap-6 p-6">{children}</div>
       </SidebarInset>
     </SidebarProvider>
   );
 }
-

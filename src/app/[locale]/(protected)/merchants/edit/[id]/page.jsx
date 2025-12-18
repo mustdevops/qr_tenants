@@ -8,7 +8,7 @@ export default async function EditMerchantPage({ params }) {
   const tCommon = await getTranslations("common");
 
   const breadcrumbData = [
-    { name: tCommon("home"), url: "/dashboard" },
+    { name: tCommon("dashboard"), url: "/dashboard" },
     { name: "Merchants", url: "/merchants" },
     { name: "Edit Merchant", url: `/merchants/edit/${id}` },
   ];

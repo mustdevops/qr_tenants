@@ -39,6 +39,24 @@ export function AppSidebar({
   const isRTL = direction === "rtl";
   const tAgent = useTranslations("dashboard.agentSidebar");
   const tMerchant = useTranslations("dashboard.merchantSidebar");
+export function AppSidebar({ role: roleProp = "agent", subscriptionType: subscriptionProp = "temporary", ...props }) {
+  const locale = useLocale();
+  const direction = getTextDirection(locale);
+  const isRTL = direction === "rtl";
+  const [role, setRole] = React.useState((roleProp || "agent").toLowerCase());
+  const [subscriptionType, setSubscriptionType] = React.useState(subscriptionProp || "temporary");
+
+  React.useEffect(() => {
+    try {
+      const { getCurrentUser, getSubscriptionType } = require("@/lib/auth-utils");
+      const user = getCurrentUser();
+      if (user && user.role) setRole((user.role || "").toLowerCase());
+      const sub = getSubscriptionType();
+      if (sub) setSubscriptionType(sub);
+    } catch (e) {
+      // If auth-utils isn't available (SSR) keep props
+    }
+  }, []);
 
   // Agent navigation
   const agentNav = [
@@ -128,13 +146,28 @@ export function AppSidebar({
     },
   ];
 
-  const navItems = role === "agent" ? agentNav : merchantNav;
+  const navItems = (role === "agent" || role === "admin") ? agentNav : merchantNav;
 
-  const userData = {
+  // derive user display info from stored user when available
+  let userData = {
     name: role === "agent" ? "Agent Admin" : "Merchant User",
     email: role === "agent" ? "agent@qrscanner.com" : "merchant@qrscanner.com",
     avatar: "/images/avatar.jpg",
   };
+
+  try {
+    const { getCurrentUser } = require("@/lib/auth-utils");
+    const u = getCurrentUser();
+    if (u) {
+      userData = {
+        name: u.name || u.username || userData.name,
+        email: u.email || userData.email,
+        avatar: u.avatar || userData.avatar,
+      };
+    }
+  } catch (e) {
+    // ignore
+  }
 
   return (
     <Sidebar collapsible="icon" side={isRTL ? "right" : "left"} {...props}>

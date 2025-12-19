@@ -3,7 +3,7 @@
 import { use, useMemo, useState } from "react";
 import { ShieldCheck, QrCode, MessageSquare, Sparkles } from "lucide-react";
 import { useRouter, Link } from "@/i18n/routing";
-import { authenticateUser, setCurrentUser } from "@/lib/auth-utils";
+import { login as authLogin } from "@/lib/services/auth";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -53,6 +53,8 @@ export default function LoginPage({ params }) {
         router.push(`/agent/dashboard`);
       } else if (user.role === "merchant") {
         router.push(`/merchant/dashboard`);
+      } else if (role === "agent" || role === "admin") {
+        router.push(`/agent/dashboard`);
       } else {
         router.push(`/dashboard`);
       }
@@ -60,6 +62,17 @@ export default function LoginPage({ params }) {
       router.refresh();
     } catch (err) {
       setError(err?.message || tValidation("error2"));
+      const respData = err?.response?.data;
+      let message = err?.message || "Something went wrong. Please try again.";
+
+      if (respData) {
+        if (typeof respData === "string") message = respData;
+        else if (respData.message) message = respData.message;
+        else message = JSON.stringify(respData);
+      }
+
+      setError(message);
+    } finally {
       setLoading(false);
     }
   };

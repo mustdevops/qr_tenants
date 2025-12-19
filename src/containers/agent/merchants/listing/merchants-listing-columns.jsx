@@ -4,15 +4,6 @@ import { StatusBadge } from "@/components/common/status-badge";
 import QRImageDialogHover from "@/components/common/qr-image-dialog";
 
 export const merchantsColumns = [
-    {
-        accessorKey: "qr",
-        header: "QR",
-        cell: ({ row }) => {
-            const raw = row.original.raw || {};
-            const img = raw.qr_code_image || raw.qr_code || null;
-            return img ? <QRImageDialogHover imageBase64={img} filename={`qr-${row.original.id}.png`} label={`QR for ${row.original.name}`} /> : null;
-        },
-    },
     { accessorKey: "name", header: "Name" },
     { accessorKey: "email", header: "Email" },
     {
@@ -26,6 +17,15 @@ export const merchantsColumns = [
         cell: ({ row }) => <StatusBadge status={row.original.subscription} />,
     },
     { accessorKey: "joinDate", header: "Join Date" },
+    {
+        accessorKey: "qr",
+        header: "QR",
+        cell: ({ row }) => {
+            const raw = row.original.raw || {};
+            const img = raw.qr_code_image || raw.qr_code || null;
+            return img ? <QRImageDialogHover imageBase64={img} filename={`qr-${row.original.id}.png`} label={`QR for ${row.original.name}`} /> : null;
+        },
+    },
     {
         id: "actions",
         header: "Actions",

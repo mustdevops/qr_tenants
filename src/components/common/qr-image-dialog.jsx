@@ -36,11 +36,11 @@ export default function QRImageDialogHover({ imageBase64, filename = "qr-code.pn
     <div className="inline-block">
       <button
         type="button"
-        className="w-10 h-10 rounded overflow-hidden cursor-pointer p-0 border-0 bg-transparent"
+        className="w-8 h-8 rounded overflow-hidden cursor-pointer p-0 border-0 bg-transparent"
         onClick={() => setOpen(true)}
         aria-label={label}
       >
-        <img src={imageBase64} alt={label} className="w-10 h-10 object-cover" />
+        <img src={imageBase64} alt={label} className="w-8 h-8 object-cover" />
       </button>
 
       <Dialog open={open} onOpenChange={(v) => setOpen(v)}>

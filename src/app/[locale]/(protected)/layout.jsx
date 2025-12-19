@@ -28,12 +28,45 @@ export default function ProtectedLayout({ children, params }) {
 
   useEffect(() => {
     if (!user) {
+      if (typeof window === "undefined") return;
+
+      try {
+        // lightweight debug to help trace transient redirects
+        // eslint-disable-next-line no-console
+        console.debug("ProtectedLayout: user missing on mount", {
+          user,
+          authToken: localStorage.getItem("authToken"),
+          cookies: document.cookie,
+        });
+      } catch (e) {}
+
+      // If there's evidence of an auth token or role cookie, wait briefly
+      // to allow client-side auth writes to settle (prevents immediate redirect
+      // after actions that set localStorage/cookies).
+      const hasToken =
+        (typeof window !== "undefined" && !!localStorage.getItem("authToken")) ||
+        (typeof document !== "undefined" && document.cookie.includes("userRole="));
+
+      if (hasToken) {
+        const timer = setTimeout(() => {
+          const fresh = getCurrentUser();
+          if (!fresh) router.push(`/${locale}/login`);
+        }, 200);
+        return () => clearTimeout(timer);
+      }
+
       router.push(`/${locale}/login`);
     }
   }, [user, router, locale]);
 
   useEffect(() => {
     if (!user) return;
+
+    try {
+      // debug role enforcement checks
+      // eslint-disable-next-line no-console
+      console.debug("ProtectedLayout: role check", { user, pathname: pathnameHook });
+    } catch (e) {}
 
     const pathname = pathnameHook || (typeof window !== "undefined" ? window.location.pathname : "");
     if (!pathname) return;

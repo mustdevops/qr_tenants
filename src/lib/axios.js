@@ -45,12 +45,14 @@ const shouldSkipAuthRedirect = (error) => {
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
+    // For 401 responses, don't mutate local auth state here.
+    // Keep a debug log so we can trace which request returned 401.
     if (error.response?.status === 401 && !shouldSkipAuthRedirect(error)) {
       if (typeof window !== "undefined") {
-        localStorage.removeItem("authToken");
-        localStorage.removeItem("currentUser");
-
-        window.location.href = "/login";
+        try {
+          // eslint-disable-next-line no-console
+          console.debug("Axios 401 — received for url:", error?.config?.url, "status:", error?.response?.status);
+        } catch (e) {}
       }
     }
 

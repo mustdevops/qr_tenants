@@ -32,7 +32,10 @@ export default function middleware(req) {
       }
     }
 
-    if (routeSegment.startsWith("merchant")) {
+  const MERCHANT_ROUTES = ["merchant"];
+
+if (MERCHANT_ROUTES.includes(routeSegment)) {
+
       if (!role || role !== "merchant") {
         url.pathname = `/${routeSegment ? "" : ""}/login`;
         // keep locale if present

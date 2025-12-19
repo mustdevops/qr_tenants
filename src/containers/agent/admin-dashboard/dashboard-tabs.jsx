@@ -40,33 +40,7 @@ export const getDashboardTabs = ({
       </div>
     ),
   },
-  {
-    value: "activity",
-    label: tAgentDashboard("activity"),
-    content: (
-      <div className="space-y-6">
-        <ChartWrapper title={tAgentDashboard("monthlyactivity")}>
-          <div className="h-[300px] flex items-center justify-center text-muted-foreground">
-            Chart will display monthly merchant activity trends
-          </div>
-        </ChartWrapper>
-                {/* Quick Actions */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Quick Actions</CardTitle>
-                    </CardHeader>
-                    <CardContent className="flex gap-4">
-                        <Link href="/agent/merchants/create">
-                            <Button>Add New Merchant</Button>
-                        </Link>
-                        <Link href="/en/agent/earnings">
-                            <Button variant="outline">View Earnings Report</Button>
-                        </Link>
-                    </CardContent>
-                </Card>
-            </div>
-        ),
-    },
+  
     {
         value: "activity",
         label: "Activity",

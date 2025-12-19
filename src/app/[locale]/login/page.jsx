@@ -31,52 +31,85 @@ export default function LoginPage({ params }) {
     { icon: MessageSquare, label: tSignin("label2") },
     { icon: ShieldCheck, label: tSignin("label3") },
   ];
-  const handleSubmit = async (event) => {
+  // const handleSubmit = async (event) => {
+  //   event.preventDefault();
+  //   setError("");
+  //   setLoading(true);
+
+  //   try {
+  //     const user = authenticateUser(username, password);
+
+  //     if (!user) {
+  //       setError(tValidation("error1"));
+  //       setLoading(false);
+  //       return;
+  //     }
+
+  //     // Save user to localStorage
+  //     setCurrentUser(user);
+
+  //     // Redirect based on role
+  //     if (user.role === "agent") {
+  //       router.push(`/agent/dashboard`);
+  //     } else if (user.role === "merchant") {
+  //       router.push(`/merchant/dashboard`);
+  //     } else if (role === "agent" || role === "admin") {
+  //       router.push(`/agent/dashboard`);
+  //     } else {
+  //       router.push(`/dashboard`);
+  //     }
+
+  //     router.refresh();
+  //   } catch (err) {
+  //     setError(err?.message || tValidation("error2"));
+  //     const respData = err?.response?.data;
+  //     let message = err?.message || "Something went wrong. Please try again.";
+
+  //     if (respData) {
+  //       if (typeof respData === "string") message = respData;
+  //       else if (respData.message) message = respData.message;
+  //       else message = JSON.stringify(respData);
+  //     }
+
+  //     setError(message);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+const handleSubmit = async (event) => {
     event.preventDefault();
     setError("");
     setLoading(true);
-
+ 
     try {
-      const user = authenticateUser(username, password);
-
-      if (!user) {
-        setError(tValidation("error1"));
-        setLoading(false);
-        return;
-      }
-
-      // Save user to localStorage
-      setCurrentUser(user);
-
+      const { user } = await authLogin(username, password);
+ 
       // Redirect based on role
-      if (user.role === "agent") {
-        router.push(`/agent/dashboard`);
-      } else if (user.role === "merchant") {
+      const role = (user.role || "").toLowerCase();
+      if (role === "merchant") {
         router.push(`/merchant/dashboard`);
       } else if (role === "agent" || role === "admin") {
         router.push(`/agent/dashboard`);
       } else {
         router.push(`/dashboard`);
       }
-
+ 
       router.refresh();
     } catch (err) {
-      setError(err?.message || tValidation("error2"));
       const respData = err?.response?.data;
       let message = err?.message || "Something went wrong. Please try again.";
-
+ 
       if (respData) {
         if (typeof respData === "string") message = respData;
         else if (respData.message) message = respData.message;
         else message = JSON.stringify(respData);
       }
-
+ 
       setError(message);
     } finally {
       setLoading(false);
     }
   };
-
   return (
     <div className="min-h-screen bg-linear-to-br from-primary/10 via-background to-secondary/10">
       <div className="fixed right-6 top-6 z-50">

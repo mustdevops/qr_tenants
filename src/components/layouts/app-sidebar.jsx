@@ -29,20 +29,13 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 
-export function AppSidebar({
-  role = "agent",
-  subscriptionType = "temporary",
-  ...props
-}) {
+
+export function AppSidebar({ role: roleProp = "agent", subscriptionType: subscriptionProp = "temporary", ...props }) {
   const locale = useLocale();
   const direction = getTextDirection(locale);
   const isRTL = direction === "rtl";
   const tAgent = useTranslations("dashboard.agentSidebar");
   const tMerchant = useTranslations("dashboard.merchantSidebar");
-export function AppSidebar({ role: roleProp = "agent", subscriptionType: subscriptionProp = "temporary", ...props }) {
-  const locale = useLocale();
-  const direction = getTextDirection(locale);
-  const isRTL = direction === "rtl";
   const [role, setRole] = React.useState((roleProp || "agent").toLowerCase());
   const [subscriptionType, setSubscriptionType] = React.useState(subscriptionProp || "temporary");
 

@@ -7,7 +7,8 @@ import { LoadingSpinner } from "@/helper/Loader";
 import { toast } from "sonner";
 import { useRouter } from "@/i18n/routing";
 import { Store, Database, Info, Save, X } from "lucide-react";
-import { createMerchant, updateMerchant } from "@/lib/services/merchants";
+import { createMerchant, updateMerchant } from "@/lib/services/helper";
+import { getCurrentUser } from "@/lib/auth-utils";
 import {
   TextField,
   EmailField,
@@ -38,71 +39,63 @@ const MerchantForm = ({ merchantId, isEdit = false }) => {
   } = useForm({
     defaultValues: {
       name: "",
-      subdomain: "",
       email: "",
       password: "",
-      phone: "",
       address: "",
       businessName: "",
       businessType: "",
-      merchantType: "permanent",
+      merchantType: "annual",
       taxId: "",
-      status: "active",
-      // Advanced/Database fields
-      databaseName: "",
-      databaseHost: "localhost",
-      databasePort: 5432,
-      databaseUsername: "postgres",
-      databasePassword: "",
     },
   });
-
   const name = watch("name");
 
-  // Auto-generate subdomain from name
-  useEffect(() => {
-    if (!isEdit && name) {
-      const subdomain = name
-        .toLowerCase()
-        .replace(/\s+/g, "-")
-        .replace(/[^a-z0-9-]/g, "")
-        .substring(0, 50);
-      reset({ ...watch(), subdomain });
-    }
-  }, [name, isEdit]);
+  // subdomain is not collected from the form; backend will generate it if needed
 
+  // If editing, you can fetch merchant data here and call reset(data).
+  // Removed static/dummy data to ensure real backend data is used.
   useEffect(() => {
     if (isEdit && merchantId) {
-      // In real implementation, fetch merchant data here
-      // For now, we'll use dummy data
-      const dummyMerchant = {
-        name: "TechMart Solutions",
-        subdomain: "techmart-solutions",
-        email: "contact@techmart.com",
-        phone: "+1-555-0123",
-        status: "active",
-        databaseName: "tenant_techmart_solutions",
-        databaseHost: "localhost",
-        databasePort: 5432,
-        databaseUsername: "postgres",
-        databasePassword: "",
-      };
-      reset(dummyMerchant);
+      // TODO: fetch merchant details and call reset(details)
     }
   }, [isEdit, merchantId, reset]);
 
   const onSubmit = async (data) => {
     setIsFormSubmitting(true);
     try {
+      // build explicit payload matching the API contract
+      const currentUser = getCurrentUser();
+      const payload = {
+        name: data.name,
+        email: data.email,
+        password: data.password,
+        role: (currentUser?.role) || "merchant",
+        address: data.address || "",
+        business_name: data.businessName,
+        business_type: data.businessType,
+        merchant_type: data.merchantType,
+        tax_id: data.taxId || "",
+      };
+
       let resp;
       if (isEdit && merchantId) {
-        resp = await updateMerchant(merchantId, data);
+        resp = await updateMerchant(merchantId, payload);
       } else {
-        resp = await createMerchant(data);
+        // debug payload
+        try {
+          // eslint-disable-next-line no-console
+          console.debug("Creating merchant payload:", payload);
+        } catch (e) {}
+
+        resp = await createMerchant(payload);
+        try {
+          // eslint-disable-next-line no-console
+          console.debug("Create merchant response:", resp);
+        } catch (e) {}
       }
 
       toast.success(isEdit ? "Merchant updated successfully" : "Merchant created successfully");
-      router.push("/merchants");
+      router.push("/agent/merchants");
     } catch (error) {
       console.error("Error saving merchant:", error);
       toast.error(
@@ -141,47 +134,26 @@ const MerchantForm = ({ merchantId, isEdit = false }) => {
               <TextField
                 label="Merchant Name"
                 name="name"
-                placeholder="TechMart Solutions"
+                placeholder="John Merchant"
                 register={register}
                 errors={errors}
                 validation={{
                   required: "Merchant name is required",
-                  minLength: {
-                    value: 3,
-                    message: "Name must be at least 3 characters",
-                  },
+                  minLength: { value: 3, message: "Name must be at least 3 characters" },
                 }}
               />
 
-              <TextField
-                label="Subdomain"
-                name="subdomain"
-                placeholder="techmart-solutions"
-                register={register}
-                errors={errors}
-                validation={{
-                  required: "Subdomain is required",
-                  minLength: {
-                    value: 3,
-                    message: "Subdomain must be at least 3 characters",
-                  },
-                  pattern: {
-                    value: /^[a-z0-9-]+$/,
-                    message:
-                      "Subdomain can only contain lowercase letters, numbers, and hyphens",
-                  },
-                }}
-              />
+              <div></div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <EmailField
                 label="Email Address"
                 name="email"
-                placeholder="contact@techmart.com"
+                placeholder="merchant1@example.com"
                 register={register}
                 errors={errors}
-                validation={{ required: true }}
+                validation={{ required: "Email is required" }}
               />
 
               <PasswordField
@@ -204,7 +176,7 @@ const MerchantForm = ({ merchantId, isEdit = false }) => {
                 placeholder="Business / Trading Name"
                 register={register}
                 errors={errors}
-                validation={{ required: false }}
+                validation={{ required: "Business name is required" }}
               />
 
               <TextField
@@ -232,7 +204,7 @@ const MerchantForm = ({ merchantId, isEdit = false }) => {
                 ]}
                 control={control}
                 errors={errors}
-                validation={{ required: false }}
+                validation={{ required: "Business type is required" }}
               />
 
               <SelectField
@@ -245,7 +217,7 @@ const MerchantForm = ({ merchantId, isEdit = false }) => {
                 ]}
                 control={control}
                 errors={errors}
-                validation={{ required: false }}
+                validation={{ required: "Merchant type is required" }}
               />
             </div>
 
@@ -258,33 +230,15 @@ const MerchantForm = ({ merchantId, isEdit = false }) => {
                 errors={errors}
                 validation={{ required: false }}
               />
-
-              <PhoneField
-                label="Phone Number"
-                name="phone"
-                placeholder="+1-555-0123"
-                control={control}
-                errors={errors}
-                validation={{ required: false }}
-              />
+            
             </div>
 
-            {/* <SelectField
-              label="Status"
-              name="status"
-              options={statusOptions}
-              control={control}
-              errors={errors}
-              placeholder="Select status"
-              validation={{
-                required: false,
-              }}
-            /> */}
+          
           </CardContent>
         </Card>
 
-        {/* Advanced Database Configuration */}
-        <Card className="mb-6">
+      
+        {/* <Card className="mb-6">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -319,7 +273,7 @@ const MerchantForm = ({ merchantId, isEdit = false }) => {
               </Button>
             </div>
           </CardHeader>
-          {/* {showAdvanced && (
+          {showAdvanced && (
             <CardContent className="space-y-4">
               <div className="rounded-lg bg-muted/50 p-4 mb-4">
                 <p className="text-sm text-muted-foreground">
@@ -396,8 +350,8 @@ const MerchantForm = ({ merchantId, isEdit = false }) => {
                 />
               </div>
             </CardContent>
-          )} */}
-        </Card>
+          )}
+        </Card> */}
 
         {/* Form Actions */}
         <div className="flex items-center justify-end gap-4">

@@ -5,16 +5,11 @@ import { ArrowLeft, Download } from "lucide-react";
 import { StatusBadge } from "@/components/common/status-badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
 import Link from "next/link";
 import { QRCodeSVG } from "qrcode.react";
+import { DataTable } from "@/components/common/data-table";
+import TableToolbar from "@/components/common/table-toolbar";
+import { useState } from "react";
 
 export default function MerchantCouponDetailContainer({ params }) {
     const { id } = use(params);
@@ -32,12 +27,39 @@ export default function MerchantCouponDetailContainer({ params }) {
     };
 
     // Dummy serial codes
+    // Dummy serial codes
     const serialCodes = [
         { code: "SUM-8X92", status: "used", customer: "John Doe", usedDate: "2024-06-02" },
         { code: "SUM-3A7B", status: "used", customer: "Jane Smith", usedDate: "2024-06-01" },
         { code: "SUM-2C4D", status: "unused", customer: "-", usedDate: "-" },
         { code: "SUM-9E1F", status: "unused", customer: "-", usedDate: "-" },
         { code: "SUM-5G6H", status: "unused", customer: "-", usedDate: "-" },
+    ];
+
+    const [page, setPage] = useState(0);
+    const [pageSize, setPageSize] = useState(10);
+    const [search, setSearch] = useState("");
+
+    const filteredCodes = serialCodes.filter(item =>
+        item.code.toLowerCase().includes(search.toLowerCase()) ||
+        (item.customer && item.customer.toLowerCase().includes(search.toLowerCase()))
+    );
+
+    const paginatedData = filteredCodes.slice(page * pageSize, (page + 1) * pageSize);
+
+    const columns = [
+        {
+            accessorKey: "code",
+            header: "Code",
+            cell: ({ row }) => <span className="font-mono">{row.original.code}</span>
+        },
+        {
+            accessorKey: "status",
+            header: "Status",
+            cell: ({ row }) => <StatusBadge status={row.original.status} />
+        },
+        { accessorKey: "customer", header: "Redeemed By" },
+        { accessorKey: "usedDate", header: "Redemption Date" },
     ];
 
     return (
@@ -127,28 +149,20 @@ export default function MerchantCouponDetailContainer({ params }) {
                     </Button>
                 </CardHeader>
                 <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Code</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead>Redeemed By</TableHead>
-                                <TableHead>Redemption Date</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {serialCodes.map((code, index) => (
-                                <TableRow key={index}>
-                                    <TableCell className="font-mono">{code.code}</TableCell>
-                                    <TableCell>
-                                        <StatusBadge status={code.status} />
-                                    </TableCell>
-                                    <TableCell>{code.customer}</TableCell>
-                                    <TableCell>{code.usedDate}</TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
+                    <TableToolbar
+                        placeholder="Search codes..."
+                        onSearchChange={setSearch}
+                    />
+                    <DataTable
+                        data={paginatedData}
+                        columns={columns}
+                        page={page}
+                        pageSize={pageSize}
+                        total={filteredCodes.length}
+                        setPage={setPage}
+                        setPageSize={setPageSize}
+                        style={{ marginTop: "1rem" }}
+                    />
                 </CardContent>
             </Card>
         </div>

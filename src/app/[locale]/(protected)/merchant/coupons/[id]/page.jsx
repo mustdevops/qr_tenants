@@ -1,5 +1,17 @@
 import MerchantCouponDetailContainer from "@/containers/merchant/coupons/detail";
+import { BreadcrumbComponent } from "@/components/common/breadcrumb-component";
 
 export default function CouponBatchDetailPage({ params }) {
-    return <MerchantCouponDetailContainer params={params} />;
+    const breadcrumbData = [
+        { name: "Merchant Dashboard", url: "/en/merchant/dashboard" },
+        { name: "Coupon Batches", url: "/en/merchant/coupons" },
+        { name: "Detail", url: "#" }, // Name will be dynamic in container, but for breadcrumb in page we can use static or pass it
+    ];
+
+    return (
+        <div className="space-y-6">
+            <BreadcrumbComponent data={breadcrumbData} />
+            <MerchantCouponDetailContainer params={params} />
+        </div>
+    );
 }

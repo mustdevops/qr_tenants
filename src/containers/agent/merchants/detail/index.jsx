@@ -4,16 +4,11 @@ import { ArrowLeft, Mail, Phone, Calendar, CreditCard } from "lucide-react";
 import { StatusBadge } from "@/components/common/status-badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
 import Link from "next/link";
-import { use } from "react";
+import { use, useState } from "react";
+import { DataTable } from "@/components/common/data-table";
+import TableToolbar from "@/components/common/table-toolbar";
+import { BreadcrumbComponent } from "@/components/common/breadcrumb-component";
 
 export default function AgentMerchantDetailContainer({ params }) {
     const { id } = use(params);
@@ -32,11 +27,41 @@ export default function AgentMerchantDetailContainer({ params }) {
     };
 
     // Dummy transaction history
+    // Dummy transaction history
     const transactions = [
         { id: 1, date: "2024-06-01", description: "Credit purchase", amount: 500, type: "credit", status: "paid" },
         { id: 2, date: "2024-05-28", description: "WhatsApp campaign", amount: -50, type: "debit", status: "completed" },
         { id: 3, date: "2024-05-25", description: "Coupon batch created", amount: -100, type: "debit", status: "completed" },
         { id: 4, date: "2024-05-20", description: "Credit purchase", amount: 1000, type: "credit", status: "paid" },
+    ];
+
+    const [page, setPage] = useState(0);
+    const [pageSize, setPageSize] = useState(10);
+    const [search, setSearch] = useState("");
+
+    const filteredTransactions = transactions.filter(item =>
+        item.description.toLowerCase().includes(search.toLowerCase())
+    );
+
+    const paginatedData = filteredTransactions.slice(page * pageSize, (page + 1) * pageSize);
+
+    const columns = [
+        { accessorKey: "date", header: "Date" },
+        { accessorKey: "description", header: "Description" },
+        {
+            accessorKey: "amount",
+            header: "Amount",
+            cell: ({ row }) => (
+                <span className={row.original.type === 'credit' ? 'text-green-600' : 'text-red-600'}>
+                    {row.original.type === 'credit' ? '+' : '-'}${Math.abs(row.original.amount)}
+                </span>
+            )
+        },
+        {
+            accessorKey: "status",
+            header: "Status",
+            cell: ({ row }) => <StatusBadge status={row.original.status} />
+        }
     ];
 
     const activityLog = [
@@ -45,8 +70,15 @@ export default function AgentMerchantDetailContainer({ params }) {
         { id: 3, date: "2024-05-30", action: "Settings updated", details: "Updated WhatsApp automation settings" },
     ];
 
+    const breadcrumbData = [
+        { name: "Agent Dashboard", url: "/en/agent/dashboard" },
+        { name: "Merchants Management", url: "/en/agent/merchants" },
+        { name: merchant.name, url: `/en/agent/merchants/${merchant.id}` },
+    ];
+
     return (
         <div className="space-y-6">
+            <BreadcrumbComponent data={breadcrumbData} />
             <div className="flex items-center gap-4">
                 <Link href="/en/agent/merchants">
                     <Button variant="ghost" size="icon">
@@ -133,30 +165,19 @@ export default function AgentMerchantDetailContainer({ params }) {
                     <CardTitle>Transaction History</CardTitle>
                 </CardHeader>
                 <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Date</TableHead>
-                                <TableHead>Description</TableHead>
-                                <TableHead>Amount</TableHead>
-                                <TableHead>Status</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {transactions.map((transaction) => (
-                                <TableRow key={transaction.id}>
-                                    <TableCell>{transaction.date}</TableCell>
-                                    <TableCell>{transaction.description}</TableCell>
-                                    <TableCell className={transaction.type === 'credit' ? 'text-green-600' : 'text-red-600'}>
-                                        {transaction.type === 'credit' ? '+' : '-'}${Math.abs(transaction.amount)}
-                                    </TableCell>
-                                    <TableCell>
-                                        <StatusBadge status={transaction.status} />
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
+                    <TableToolbar
+                        placeholder="Search transactions..."
+                        onSearchChange={setSearch}
+                    />
+                    <DataTable
+                        data={paginatedData}
+                        columns={columns}
+                        page={page}
+                        pageSize={pageSize}
+                        total={filteredTransactions.length}
+                        setPage={setPage}
+                        setPageSize={setPageSize}
+                    />
                 </CardContent>
             </Card>
 

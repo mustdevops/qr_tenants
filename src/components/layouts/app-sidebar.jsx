@@ -17,7 +17,7 @@ import {
   Database,
   Settings,
 } from "lucide-react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { getTextDirection } from "@/i18n/routing";
 import { NavMain } from "@/components/layouts/nav-main";
 import { NavUser } from "@/components/layouts/nav-user";
@@ -29,45 +29,51 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 
-export function AppSidebar({ role = "agent", subscriptionType = "temporary", ...props }) {
+export function AppSidebar({
+  role = "agent",
+  subscriptionType = "temporary",
+  ...props
+}) {
   const locale = useLocale();
   const direction = getTextDirection(locale);
   const isRTL = direction === "rtl";
+  const tAgent = useTranslations("dashboard.agentSidebar");
+  const tMerchant = useTranslations("dashboard.merchantSidebar");
 
   // Agent navigation
   const agentNav = [
     {
-      title: "Dashboard",
+      title: tAgent("dashboard"),
       url: "/agent/dashboard",
       icon: LayoutDashboard,
     },
     {
-      title: "Merchants",
+      title: tAgent("merchants"),
       url: "/agent/merchants",
       icon: Users,
     },
     {
-      title: "Wallet",
+      title: tAgent("wallet"),
       url: "/agent/wallet",
       icon: Wallet,
     },
     {
-      title: "Earnings",
+      title: tAgent("earnings"),
       url: "/agent/earnings",
       icon: DollarSign,
     },
     {
-      title: "Statements",
+      title: tAgent("statements"),
       url: "/agent/statements",
       icon: FileText,
     },
     {
-      title: "Coupon Sync",
+      title: tAgent("couponsync"),
       url: "/agent/coupon-sync",
       icon: RefreshCw,
     },
     {
-      title: "Support",
+      title: tAgent("support"),
       url: "/agent/support",
       icon: MessageSquare,
     },
@@ -76,43 +82,47 @@ export function AppSidebar({ role = "agent", subscriptionType = "temporary", ...
   // Merchant navigation
   const merchantNav = [
     {
-      title: "Dashboard",
+      title: tMerchant("dashboard"),
       url: "/merchant/dashboard",
       icon: LayoutDashboard,
     },
     {
-      title: "Coupons",
+      title: tMerchant("coupons"),
       url: "/merchant/coupons",
       icon: Ticket,
     },
     {
-      title: "Serial Codes",
+      title: tMerchant("serialCodes"),
       url: "/merchant/serial-codes",
       icon: Hash,
     },
     {
-      title: "Wallet",
+      title: tMerchant("wallet"),
       url: "/merchant/wallet",
       icon: Wallet,
     },
     {
-      title: "Campaigns",
+      title: tMerchant("campaigns"),
       url: "/merchant/campaigns",
       icon: Megaphone,
     },
     {
-      title: "Lucky Draw",
+      title: tMerchant("luckydraw"),
       url: "/merchant/lucky-draw",
       icon: Gift,
     },
     // Only show Customer Data for annual subscribers
-    ...(subscriptionType === "annual" ? [{
-      title: "Customer Data",
-      url: "/merchant/customer-data",
-      icon: Database,
-    }] : []),
+    ...(subscriptionType === "annual"
+      ? [
+          {
+            title: "Customer Data",
+            url: "/merchant/customer-data",
+            icon: Database,
+          },
+        ]
+      : []),
     {
-      title: "Ads",
+      title: tMerchant("ads"),
       url: "/merchant/ads",
       icon: Settings,
     },
@@ -143,4 +153,3 @@ export function AppSidebar({ role = "agent", subscriptionType = "temporary", ...
     </Sidebar>
   );
 }
-

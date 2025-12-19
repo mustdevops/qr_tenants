@@ -9,19 +9,21 @@ import TableToolbar from "@/components/common/table-toolbar";
 
 import { merchants } from "./merchants-listing-data";
 import { merchantsColumns } from "./merchants-listing-columns";
+import { useTranslations } from "next-intl";
 
 export default function AgentMerchantsListingContainer() {
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(10);
   const [search, setSearch] = useState("");
-
+  const tMerchants = useTranslations("dashboard.agentMerchantManagement");
   const filteredMerchants = merchants.filter(
     (item) =>
       item.name.toLowerCase().includes(search.toLowerCase()) ||
       item.email.toLowerCase().includes(search.toLowerCase())
   );
 
+  const columns = merchantsColumns(tMerchants);
   const paginatedData = filteredMerchants.slice(
     page * pageSize,
     (page + 1) * pageSize
@@ -31,29 +33,29 @@ export default function AgentMerchantsListingContainer() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Merchants Management</h1>
-          <p className="text-muted-foreground">
-            Manage all your merchants here
-          </p>
+          <h1 className="text-3xl font-bold">
+            {tMerchants("merchantmanagement")}
+          </h1>
+          <p className="text-muted-foreground">{tMerchants("description")}</p>
         </div>
         <Button>
           <Plus className="mr-2 h-4 w-4" />
-          Add Merchant
+          {tMerchants("addmerchant")}
         </Button>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>All Merchants</CardTitle>
+          <CardTitle> {tMerchants("allmerchants")}</CardTitle>
         </CardHeader>
         <CardContent>
           <TableToolbar
-            placeholder="Search merchants..."
+            placeholder={tMerchants("searchmerchants")}
             onSearchChange={setSearch}
           />
           <DataTable
             data={paginatedData}
-            columns={merchantsColumns}
+            columns={columns}
             page={page}
             pageSize={pageSize}
             total={filteredMerchants.length}

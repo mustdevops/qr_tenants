@@ -1,15 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable } from "@/components/common/data-table";
 import TableToolbar from "@/components/common/table-toolbar";
 
-import { merchants } from "./merchants-listing-data";
 import { merchantsColumns } from "./merchants-listing-columns";
 import { useTranslations } from "next-intl";
+import { getMerchants } from "@/lib/services/helper";
 import { useRouter } from "next/navigation";
 
 export default function AgentMerchantsListingContainer() {
@@ -18,18 +18,48 @@ export default function AgentMerchantsListingContainer() {
   const [pageSize, setPageSize] = useState(10);
   const [search, setSearch] = useState("");
   const tMerchants = useTranslations("dashboard.agentMerchantManagement");
+  const [data, setData] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(false);
 const router =useRouter()
-  const filteredMerchants = merchants.filter(
-    (item) =>
-      item.name.toLowerCase().includes(search.toLowerCase()) ||
-      item.email.toLowerCase().includes(search.toLowerCase())
-  );
 
-  const columns = merchantsColumns(tMerchants);
-  const paginatedData = filteredMerchants.slice(
-    page * pageSize,
-    (page + 1) * pageSize
-  );
+  useEffect(() => {
+    let mounted = true;
+    async function fetchMerchants() {
+      setLoading(true);
+      try {
+        // API expects 1-based page
+        const resp = await getMerchants({ page: page + 1, pageSize, search });
+        // resp expected shape: { data: [...], meta: { total, page, pageSize } }
+        const items = resp?.data || resp || [];
+        if (!mounted) return;
+
+        // Map backend items to table shape
+        const mapped = items.map((m) => ({
+          id: m.id,
+          name: m.user?.name || m.business_name || "-",
+          email: m.user?.email || "",
+          status: m.user?.is_active ? "active" : "inactive",
+          subscription: m.merchant_type || m.subscription || "-",
+          joinDate: m.created_at ? new Date(m.created_at).toLocaleDateString() : "-",
+          raw: m,
+        }));
+
+        setData(mapped);
+        setTotal(resp?.meta?.total ?? mapped.length);
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.error("Failed to load merchants", e);
+        setData([]);
+        setTotal(0);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchMerchants();
+    return () => (mounted = false);
+  }, [page, pageSize, search]);
 
   return (
     <div className="space-y-6">
@@ -56,13 +86,14 @@ const router =useRouter()
             onSearchChange={setSearch}
           />
           <DataTable
-            data={paginatedData}
-            columns={columns}
+            data={data}
+            columns={merchantsColumns}
             page={page}
             pageSize={pageSize}
-            total={filteredMerchants.length}
+            total={total}
             setPage={setPage}
             setPageSize={setPageSize}
+            isLoading={loading}
           />
         </CardContent>
       </Card>

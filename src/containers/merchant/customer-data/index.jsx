@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Lock, Download } from "lucide-react";
-import { getSubscriptionType } from "@/lib/auth-utils";
+import { useSession } from "next-auth/react";
 import {
   Card,
   CardContent,
@@ -18,15 +18,17 @@ import { customers } from "./customers-data";
 import { customersColumns } from "./customers-columns";
 
 export default function MerchantCustomerDataContainer() {
+  const { data: session, status } = useSession();
   const [subscription, setSubscription] = useState("temporary");
   const [loading, setLoading] = useState(true);
 
-  // Simulated subscription check
+  // subscription check from session
   useEffect(() => {
-    const type = getSubscriptionType();
+    if (status === "loading") return;
+    const type = session?.user?.subscriptionType || "temporary";
     setSubscription(type);
     setLoading(false);
-  }, []);
+  }, [session, status]);
 
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(10);

@@ -2,13 +2,16 @@
 
 import { useEffect } from "react";
 import { useRouter } from "@/i18n/routing";
-import { getCurrentUser } from "@/lib/auth-utils";
+import { useSession } from "next-auth/react";
 
 export default function RoleGuard({ allowedRoles = [], children }) {
   const router = useRouter();
+  const { data: session, status } = useSession();
 
   useEffect(() => {
-    const user = getCurrentUser();
+    if (status === "loading") return;
+
+    const user = session?.user;
     const role = (user?.role || "").toLowerCase();
 
     if (!user) {
@@ -16,11 +19,14 @@ export default function RoleGuard({ allowedRoles = [], children }) {
       return;
     }
 
-    if (allowedRoles.length > 0 && !allowedRoles.map(r => r.toLowerCase()).includes(role)) {
+    if (
+      allowedRoles.length > 0 &&
+      !allowedRoles.map((r) => r.toLowerCase()).includes(role)
+    ) {
       // not allowed
       router.push("/login");
     }
-  }, [router]);
+  }, [router, session, status, allowedRoles]);
 
   return children;
 }

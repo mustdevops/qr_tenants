@@ -38,7 +38,8 @@ export default async function LocaleLayout({ children, params }) {
   return (
     <html lang={locale} dir={direction}>
       <body
-        className={`${inter.variable} ${firaCode.variable} font-sans antialiased`}>
+        className={`${inter.variable} ${firaCode.variable} font-sans antialiased`}
+      >
         <AuthProvider>
           <NextIntlClientProvider messages={messages}>
             {children}

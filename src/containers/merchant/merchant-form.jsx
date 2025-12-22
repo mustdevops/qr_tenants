@@ -2,13 +2,19 @@
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { LoadingSpinner } from "@/helper/Loader";
 import { toast } from "sonner";
 import { useRouter } from "@/i18n/routing";
 import { Store, Database, Info, Save, X } from "lucide-react";
 import { createMerchant, updateMerchant } from "@/lib/services/helper";
-import { getCurrentUser } from "@/lib/auth-utils";
+import { useSession } from "next-auth/react";
 import {
   TextField,
   EmailField,
@@ -26,6 +32,7 @@ const statusOptions = [
 
 const MerchantForm = ({ merchantId, isEdit = false }) => {
   const router = useRouter();
+  const { data: session } = useSession();
   const [isFormSubmitting, setIsFormSubmitting] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
 
@@ -64,12 +71,12 @@ const MerchantForm = ({ merchantId, isEdit = false }) => {
     setIsFormSubmitting(true);
     try {
       // build explicit payload matching the API contract
-      const currentUser = getCurrentUser();
+      const currentUser = session?.user;
       const payload = {
         name: data.name,
         email: data.email,
         password: data.password,
-        role: (currentUser?.role) || "merchant",
+        role: currentUser?.role || "merchant",
         address: data.address || "",
         business_name: data.businessName,
         business_type: data.businessType,
@@ -94,7 +101,11 @@ const MerchantForm = ({ merchantId, isEdit = false }) => {
         } catch (e) {}
       }
 
-      toast.success(isEdit ? "Merchant updated successfully" : "Merchant created successfully");
+      toast.success(
+        isEdit
+          ? "Merchant updated successfully"
+          : "Merchant created successfully"
+      );
       router.push("/agent/merchants");
     } catch (error) {
       console.error("Error saving merchant:", error);
@@ -139,7 +150,10 @@ const MerchantForm = ({ merchantId, isEdit = false }) => {
                 errors={errors}
                 validation={{
                   required: "Merchant name is required",
-                  minLength: { value: 3, message: "Name must be at least 3 characters" },
+                  minLength: {
+                    value: 3,
+                    message: "Name must be at least 3 characters",
+                  },
                 }}
               />
 
@@ -163,8 +177,13 @@ const MerchantForm = ({ merchantId, isEdit = false }) => {
                 register={register}
                 errors={errors}
                 validation={{
-                  required: !isEdit ? "Password is required for new merchants" : false,
-                  minLength: { value: 6, message: "Password must be at least 6 characters" },
+                  required: !isEdit
+                    ? "Password is required for new merchants"
+                    : false,
+                  minLength: {
+                    value: 6,
+                    message: "Password must be at least 6 characters",
+                  },
                 }}
               />
             </div>
@@ -230,14 +249,10 @@ const MerchantForm = ({ merchantId, isEdit = false }) => {
                 errors={errors}
                 validation={{ required: false }}
               />
-            
             </div>
-
-          
           </CardContent>
         </Card>
 
-      
         {/* <Card className="mb-6">
           <CardHeader>
             <div className="flex items-center justify-between">
@@ -383,4 +398,3 @@ const MerchantForm = ({ merchantId, isEdit = false }) => {
 };
 
 export default MerchantForm;
-

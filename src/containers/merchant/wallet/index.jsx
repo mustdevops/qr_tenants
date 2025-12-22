@@ -1,5 +1,6 @@
 "use client";
 
+import { useSession } from "next-auth/react";
 import { CreditCard } from "lucide-react";
 import { TransactionTable } from "@/components/common/transaction-table";
 import {
@@ -11,12 +12,12 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { getSubscriptionType } from "@/lib/auth-utils";
 
 import { transactions, creditPackages } from "./wallet-data";
 
 export default function MerchantWalletContainer({ embedded = false }) {
-  const subscriptionType = getSubscriptionType();
+  const { data: session } = useSession();
+  const subscriptionType = session?.user?.subscriptionType || "temporary";
   const credits = 2500;
 
   return (

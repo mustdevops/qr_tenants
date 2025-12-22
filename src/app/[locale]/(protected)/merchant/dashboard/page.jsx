@@ -1,5 +1,3 @@
-"use client";
-
 import { BreadcrumbComponent } from "@/components/common/breadcrumb-component";
 // Logic moved to src/containers/merchant/dashboard/index.jsx
 import MerchantDashboardContainer from "@/containers/merchant/merchant-dashboard";

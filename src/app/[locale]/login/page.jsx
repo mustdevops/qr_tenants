@@ -100,7 +100,6 @@ export default function LoginPage({ params }) {
       const user = session?.user;
       console.log("Logged in user:", user);
       if (user?.role) {
-
         const role = user.role.toLowerCase();
         if (role === "admin") {
           router.push("/agent/dashboard"); // Redirect admin to agent dashboard
@@ -209,8 +208,6 @@ export default function LoginPage({ params }) {
                   : tPlaceholders("submitLoading")}
               </Button>
             </form>
-
-
           </div>
         </div>
       </div>

@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { getTextDirection } from "@/i18n/routing";
-import { useSession } from "next-auth/react"; // Add import
+import { useSession } from "next-auth/react";
 import { NavMain } from "@/components/layouts/nav-main";
 import { NavUser } from "@/components/layouts/nav-user";
 import {
@@ -30,19 +30,23 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 
-
-export function AppSidebar({ role: roleProp = "agent", subscriptionType: subscriptionProp = "temporary", ...props }) {
+export function AppSidebar({
+  role: roleProp = "agent",
+  subscriptionType: subscriptionProp = "temporary",
+  ...props
+}) {
   const locale = useLocale();
   const direction = getTextDirection(locale);
   const isRTL = direction === "rtl";
   const tAgent = useTranslations("dashboard.agentSidebar");
   const tMerchant = useTranslations("dashboard.merchantSidebar");
-  const { data: session } = useSession(); // Get session
+  const { data: session } = useSession();
   const user = session?.user;
 
   // Use user from session for role and subscriptionType
   const role = (user?.role || roleProp || "agent").toLowerCase();
-  const subscriptionType = user?.subscriptionType || subscriptionProp || "temporary";
+  const subscriptionType =
+    user?.subscriptionType || subscriptionProp || "temporary";
 
   // Agent navigation
   const agentNav = [
@@ -132,28 +136,20 @@ export function AppSidebar({ role: roleProp = "agent", subscriptionType: subscri
     },
   ];
 
-  const navItems = (role === "agent" || role === "admin") ? agentNav : merchantNav;
+  const navItems =
+    role === "agent" || role === "admin" ? agentNav : merchantNav;
 
-  // derive user display info from stored user when available
-  let userData = {
-    name: role === "agent" ? "Agent Admin" : "Merchant User",
-    email: role === "agent" ? "agent@qrscanner.com" : "merchant@qrscanner.com",
-    avatar: "/images/avatar.jpg",
+  // derive user display info from session when available
+  const userData = {
+    name:
+      user?.name ||
+      user?.username ||
+      (role === "agent" ? "Agent Admin" : "Merchant User"),
+    email:
+      user?.email ||
+      (role === "agent" ? "agent@qrscanner.com" : "merchant@qrscanner.com"),
+    avatar: user?.avatar || "/images/avatar.jpg",
   };
-
-  try {
-    const { getCurrentUser } = require("@/lib/auth-utils");
-    const u = getCurrentUser();
-    if (u) {
-      userData = {
-        name: u.name || u.username || userData.name,
-        email: u.email || userData.email,
-        avatar: u.avatar || userData.avatar,
-      };
-    }
-  } catch (e) {
-    // ignore
-  }
 
   return (
     <Sidebar collapsible="icon" side={isRTL ? "right" : "left"} {...props}>

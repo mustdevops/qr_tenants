@@ -15,16 +15,13 @@ import {
 import { Separator } from "@radix-ui/react-dropdown-menu";
 
 export default function ProtectedLayout({ children, params }) {
-  const { locale } = use(params);
+  const locale = use(params);
   const router = useRouter();
   const { data: session, status } = useSession(); // Use NextAuth session
   const user = session?.user;
-  const [mounted, setMounted] = useState(false);
+  const role = (user?.role || "").toLowerCase();
+  const [mounted, setMounted] = useState(true);
   const pathnameHook = usePathname();
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
     if (status === "loading") return; // wait for session to resolve
@@ -34,35 +31,54 @@ export default function ProtectedLayout({ children, params }) {
     }
   }, [status, user, router, locale]);
 
-
-
   useEffect(() => {
     if (!user) return;
 
     try {
       // debug role enforcement checks
-      // eslint-disable-next-line no-console
-      console.debug("ProtectedLayout: role check", { user, pathname: pathnameHook });
-    } catch (e) { }
+      console.debug("ProtectedLayout: role check", {
+        user,
+        pathname: pathnameHook,
+      });
+    } catch (e) {}
 
-    const pathname = pathnameHook || (typeof window !== "undefined" ? window.location.pathname : "");
+    const pathname =
+      pathnameHook ||
+      (typeof window !== "undefined" ? window.location.pathname : "");
     if (!pathname) return;
 
     const parts = pathname.split("/").filter(Boolean);
-    const LOCALES = ["zh", "ms", "th", "vi", "id", "ko", "ja", "hi", "ar", "en"];
-    const routeSegment = LOCALES.includes(parts[0]) ? parts[1] || "" : parts[0] || "";
+    const LOCALES = [
+      "zh",
+      "ms",
+      "th",
+      "vi",
+      "id",
+      "ko",
+      "ja",
+      "hi",
+      "ar",
+      "en",
+    ];
+    const routeSegment = LOCALES.includes(parts[0])
+      ? parts[1] || ""
+      : parts[0] || "";
 
     // Client-side role enforcement on route segment
-    if (routeSegment.startsWith("merchant") && user.role !== "merchant") {
+    // Normalize role to lower-case to avoid casing issues from API
+    if (routeSegment.startsWith("merchant") && role !== "merchant") {
       router.push(`/${locale}/login`);
       return;
     }
 
-    if ((routeSegment.startsWith("agent") || routeSegment.startsWith("admin")) && !(user.role === "agent" || user.role === "admin")) {
+    if (
+      (routeSegment.startsWith("agent") || routeSegment.startsWith("admin")) &&
+      !(role === "agent" || role === "admin")
+    ) {
       router.push(`/${locale}/login`);
       return;
     }
-  }, [user, status, router, locale, pathnameHook]);
+  }, [user, role, status, router, locale, pathnameHook]);
 
   if (!mounted || !user) {
     return null; // Or a loading spinner
@@ -73,7 +89,10 @@ export default function ProtectedLayout({ children, params }) {
 
   return (
     <SidebarProvider>
-      <AppSidebar role={user.role} subscriptionType={user.subscriptionType || "temporary"} />
+      <AppSidebar
+        role={user.role}
+        subscriptionType={user.subscriptionType || "temporary"}
+      />
       <SidebarInset>
         <div>
           <header className="flex items-center justify-between px-6 py-3 border-b border-sidebar-border bg-white">
@@ -96,4 +115,3 @@ export default function ProtectedLayout({ children, params }) {
     </SidebarProvider>
   );
 }
-

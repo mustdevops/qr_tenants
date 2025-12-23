@@ -8,17 +8,235 @@ import {
   Shield,
   Smartphone,
   Globe,
-  Check,
+  Megaphone,
+  Gift,
+  Sparkles,
+  Copy,
+  CheckCircle2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { LanguageSwitcher } from "@/components/common/language-switcher";
+import { useEffect, useState } from "react";
 
 export default function LandingPage() {
   const tHeroSection = useTranslations("Homepage.heroSection");
   const tFeatures = useTranslations("Homepage.fetaures");
   const tHowItWorks = useTranslations("Homepage.howitworks");
   const tFooter = useTranslations("Homepage.footer");
+  const locale = useLocale();
+  const [copiedCode, setCopiedCode] = useState(null);
+  const [selectedMerchantId, setSelectedMerchantId] = useState("brewlab");
+
+  const sponsoredAds = [
+    {
+      title: "Boosted Reach",
+      description: "Premium placement to get your QR campaigns noticed first.",
+      cta: "Book a slot",
+      accent: "from $79/week",
+      tag: "Sponsored",
+    },
+    {
+      title: "Seasonal Spotlight",
+      description:
+        "Highlight your holiday or event deals with vibrant banners.",
+      cta: "Reserve now",
+      accent: "Limited spots",
+      tag: "Hot",
+    },
+    {
+      title: "Local Favorites",
+      description:
+        "Show up in neighborhoods that matter with geo-targeted ads.",
+      cta: "Plan campaign",
+      accent: "Hyper-local",
+      tag: "New",
+    },
+  ];
+
+  const merchants = [
+    {
+      id: "brewlab",
+      name: "BrewLab Coffee",
+      category: "Specialty Cafe",
+      highlight: "Loyalty perks on every 5th scan.",
+      tone: "Warm & cozy rewards for coffee loyalists.",
+      coupons: [
+        {
+          code: "BREWQR20",
+          title: "Morning essentials • 20% off",
+          description: "Apply on any handcrafted drink before 11 AM.",
+          badge: "Best for regulars",
+          expires: "Ends soon",
+        },
+        {
+          code: "BREWFREE",
+          title: "Free pastry with 2 coffees",
+          description: "Scan in-store and apply at checkout.",
+          badge: "In-store exclusive",
+          expires: "Weekend only",
+        },
+      ],
+    },
+    {
+      id: "urbanfit",
+      name: "UrbanFit Studio",
+      category: "Fitness & Wellness",
+      highlight: "Scan-based passes that convert trial users.",
+      tone: "Perfect for fitness creators and studios.",
+      coupons: [
+        {
+          code: "FITPASS7",
+          title: "7‑day unlimited pass",
+          description: "Access all classes with a single QR.",
+          badge: "Top converting",
+          expires: "Limited slots",
+        },
+        {
+          code: "FITDUO30",
+          title: "Bring a friend • 30% off",
+          description: "Applied when two passes are scanned together.",
+          badge: "Partner offer",
+          expires: "Valid this month",
+        },
+      ],
+    },
+    {
+      id: "streetbites",
+      name: "StreetBites",
+      category: "Quick Service Restaurant",
+      highlight: "Serial codes that keep queues moving.",
+      tone: "Designed for high-volume counters.",
+      coupons: [
+        {
+          code: "BITES15",
+          title: "Combo deals • 15% off",
+          description: "Works on QR-based combo menus.",
+          badge: "Rush hour",
+          expires: "5–7 PM daily",
+        },
+        {
+          code: "QRQUEUE",
+          title: "Skip-the-line upgrade",
+          description: "Scan to unlock priority pickup.",
+          badge: "VIP lane",
+          expires: "Selected outlets",
+        },
+      ],
+    },
+    {
+      id: "glowbar",
+      name: "Glow Bar Beauty",
+      category: "Salon & Spa",
+      highlight: "Memberships driven by QR-linked referrals.",
+      tone: "For beauty chains going phygital.",
+      coupons: [
+        {
+          code: "GLOWFIRST",
+          title: "First visit • 30% off",
+          description: "Redeemable on any service above $40.",
+          badge: "New guests",
+          expires: "This quarter",
+        },
+        {
+          code: "GLOWFRIENDS",
+          title: "Refer & relax",
+          description: "Both get 15% off on the next booking.",
+          badge: "Referral booster",
+          expires: "No hard expiry",
+        },
+      ],
+    },
+    {
+      id: "cineplex",
+      name: "CinePlex QR",
+      category: "Cinema & Events",
+      highlight: "Serial coupons linked to specific shows.",
+      tone: "Ideal for premieres and live events.",
+      coupons: [
+        {
+          code: "SEATUP",
+          title: "Seat upgrade on check‑in",
+          description: "Scan on arrival to unlock better seats.",
+          badge: "Experience",
+          expires: "While seats last",
+        },
+        {
+          code: "SNACKQR",
+          title: "Snacks combo • 25% off",
+          description: "Attach to QR tickets and redeem at the counter.",
+          badge: "Upsell",
+          expires: "All shows today",
+        },
+      ],
+    },
+    {
+      id: "freshmart",
+      name: "FreshMart Local",
+      category: "Grocery & Retail",
+      highlight: "Shelf QR tags that rotate seasonal offers.",
+      tone: "Perfect for multi-location retail teams.",
+      coupons: [
+        {
+          code: "FRESH20",
+          title: "Fresh basket • 20% off",
+          description: "Applies on curated fresh produce bundles.",
+          badge: "Seasonal",
+          expires: "This week only",
+        },
+        {
+          code: "SCANBULK",
+          title: "Bulk & save",
+          description: "Scan in aisle to unlock volume discounts.",
+          badge: "Inventory push",
+          expires: "Selected SKUs",
+        },
+      ],
+    },
+    {
+      id: "stayhub",
+      name: "StayHub Stays",
+      category: "Hotels & Stays",
+      highlight: "Room QR that unlock on‑property perks.",
+      tone: "For hosts who want every scan to delight.",
+      coupons: [
+        {
+          code: "LATEOUT",
+          title: "Late checkout unlock",
+          description: "Guests scan room QR for a free 2‑hour extension.",
+          badge: "Guest delight",
+          expires: "Subject to availability",
+        },
+        {
+          code: "QRBREAKFAST",
+          title: "Breakfast for 2",
+          description: "Attach to booking confirmations via QR.",
+          badge: "Add‑on",
+          expires: "Weekends only",
+        },
+      ],
+    },
+  ];
+
+  const visibleMerchants = merchants.slice(0, 6);
+  const showSeeAll = merchants.length > visibleMerchants.length;
+  const activeMerchant =
+    merchants.find((m) => m.id === selectedMerchantId) ?? merchants[0];
+
+  useEffect(() => {
+    if (!copiedCode) return;
+    const timer = setTimeout(() => setCopiedCode(null), 2000);
+    return () => clearTimeout(timer);
+  }, [copiedCode]);
+
+  const handleCopy = async (code) => {
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopiedCode(code);
+    } catch (err) {
+      console.error("Failed to copy code", err);
+    }
+  };
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -33,12 +251,12 @@ export default function LandingPage() {
         <div className="flex items-center gap-4">
           <LanguageSwitcher />
           <Link
-            href="/en/login"
+            href={`/${locale}/login`}
             className="text-sm font-medium hover:underline underline-offset-4"
           >
             Sign In
           </Link>
-          <Link href="/en/login">
+          <Link href={`/${locale}/login`}>
             <Button>Get Started</Button>
           </Link>
         </div>
@@ -59,7 +277,7 @@ export default function LandingPage() {
             {tHeroSection("description")}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 pt-4">
-            <Link href="/en/login">
+            <Link href={`/${locale}/login`}>
               <Button size="lg" className="h-12 px-8 text-lg">
                 {tHeroSection("freeTrial")}
                 <ArrowRight className="ml-2 h-5 w-5" />
@@ -176,83 +394,223 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Pricing */}
-        <section className="bg-slate-900 text-white py-20 lg:py-32">
-          <div className="px-6 lg:px-10 max-w-7xl mx-auto">
-            <div className="text-center max-w-2xl mx-auto mb-16">
-              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl mb-4">
-                Simple, transparent pricing
-              </h2>
-              <p className="text-slate-400 text-lg">
-                Choose the plan that fits your business size.
-              </p>
+        {/* Merchants, coupons & paid ads */}
+        <section className="relative overflow-hidden bg-linear-to-b from-slate-950 via-slate-900 to-black text-white py-20 lg:py-32">
+          <div className="absolute inset-0 pointer-events-none opacity-20 bg-[radial-gradient(circle_at_top,#38bdf880,transparent_40%),radial-gradient(circle_at_bottom,#a855f780,transparent_45%)]" />
+          <div className="px-6 lg:px-10 max-w-7xl mx-auto relative">
+            <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+              <div className="space-y-4">
+                <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em]">
+                  <Sparkles className="h-4 w-4 text-amber-300" />
+                  Live merchant drops
+                </div>
+                <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+                  Tap a merchant. Copy a coupon. Run it with QR.
+                </h2>
+                <p className="text-sm sm:text-base text-slate-300 max-w-2xl">
+                  Preview how multi-merchant coupon walls look inside QR Rev.
+                  Each brand carries its own coupon stack, ready to be scanned,
+                  copied, and redeemed.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-3 items-center">
+                <div className="flex items-center gap-2 rounded-full bg-white text-slate-900 px-4 py-2 text-xs sm:text-sm font-semibold shadow-lg">
+                  <Megaphone className="h-4 w-4" />
+                  Paid placements available
+                </div>
+                {showSeeAll && (
+                  <Link href={`/${locale}/merchants`}>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="border-white/40 text-white hover:bg-white hover:text-slate-900"
+                    >
+                      View more merchants
+                    </Button>
+                  </Link>
+                )}
+              </div>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-              {/* Standard */}
-              <div className="bg-slate-800 rounded-2xl p-8 border border-slate-700">
-                <h3 className="text-xl font-bold mb-2">Temporary Plan</h3>
-                <div className="text-3xl font-bold mb-6">
-                  $29
-                  <span className="text-lg text-slate-400 font-normal">
-                    /month
+            <div className="mt-10 grid gap-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.4fr)] lg:items-stretch">
+              {/* Merchant list */}
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-5 backdrop-blur flex flex-col">
+                <div className="flex items-center justify-between gap-3 mb-4">
+                  <div className="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-white/60">
+                    <div className="h-px w-8 bg-white/30" />
+                    Merchants
+                  </div>
+                  <span className="rounded-full bg-emerald-400/10 border border-emerald-300/40 px-2.5 py-1 text-[10px] font-semibold text-emerald-100">
+                    {merchants.length} live examples
                   </span>
                 </div>
-                <ul className="space-y-3 mb-8 text-slate-300">
-                  <li className="flex items-center gap-2">
-                    <Check className="h-4 w-4 text-green-400" /> 500 Coupons per
-                    Batch
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="h-4 w-4 text-green-400" /> Basic Analytics
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="h-4 w-4 text-green-400" /> Standard
-                    Support
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="h-4 w-4 text-green-400" /> 1 Location
-                  </li>
-                </ul>
-                <Button className="w-full" variant="outline">
-                  Get Started
-                </Button>
+                <div className="space-y-2 flex-1 min-h-0 overflow-y-auto pr-1 pb-1">
+                  {visibleMerchants.map((merchant) => {
+                    const isActive = merchant.id === activeMerchant.id;
+                    return (
+                      <button
+                        key={merchant.id}
+                        type="button"
+                        onClick={() => setSelectedMerchantId(merchant.id)}
+                        className={`w-full text-left rounded-xl border px-3.5 py-3 transition flex flex-col gap-1.5 ${
+                          isActive
+                            ? "border-emerald-400/70 bg-emerald-400/10 shadow-[0_0_0_1px_rgba(16,185,129,0.5)]"
+                            : "border-white/5 bg-black/20 hover:border-white/30 hover:bg-white/5"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-[11px] font-semibold uppercase tracking-wide">
+                              {merchant.name
+                                .split(" ")
+                                .map((w) => w[0])
+                                .join("")
+                                .slice(0, 3)}
+                            </div>
+                            <div>
+                              <p className="text-sm font-semibold">
+                                {merchant.name}
+                              </p>
+                              <p className="text-[11px] uppercase tracking-[0.18em] text-white/55">
+                                {merchant.category}
+                              </p>
+                            </div>
+                          </div>
+                          <span className="rounded-full bg-white/5 px-2 py-0.5 text-[10px] text-white/70">
+                            {merchant.coupons.length} coupons
+                          </span>
+                        </div>
+                        <p className="text-xs text-white/70 line-clamp-2">
+                          {merchant.highlight}
+                        </p>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
-              {/* Annual */}
-              <div className="bg-primary rounded-2xl p-8 border-2 border-primary relative transform md:-translate-y-4">
-                <div className="absolute top-0 right-0 bg-white text-primary text-xs font-bold px-3 py-1 rounded-bl-lg rounded-tr-lg">
-                  BEST VALUE
+              {/* Active merchant coupons + ads */}
+              <div className="space-y-5">
+                <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-5 sm:p-7 shadow-[0_30px_100px_-60px_rgba(99,102,241,0.7)]">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <p className="text-[11px] uppercase tracking-[0.18em] text-white/60">
+                        Coupon wall preview
+                      </p>
+                      <h3 className="mt-1 text-xl sm:text-2xl font-bold">
+                        {activeMerchant.name}
+                      </h3>
+                      <p className="text-xs uppercase tracking-[0.18em] text-white/50">
+                        {activeMerchant.category}
+                      </p>
+                    </div>
+                    <div className="rounded-xl border border-emerald-300/40 bg-emerald-400/10 px-4 py-2 text-xs text-emerald-100 flex items-center gap-2">
+                      <QrCode className="h-3.5 w-3.5" />
+                      <span>Optimized for scan‑to‑redeem flows</span>
+                    </div>
+                  </div>
+                  <p className="mt-3 text-sm text-white/70">
+                    {activeMerchant.tone}
+                  </p>
+
+                  <div className="mt-6 space-y-4">
+                    {activeMerchant.coupons.map((coupon) => (
+                      <div
+                        key={coupon.code}
+                        className="flex flex-col gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3 md:flex-row md:items-center md:justify-between"
+                      >
+                        <div className="flex flex-col gap-1">
+                          <div className="flex flex-wrap items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-white/60">
+                            <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] text-sky-200">
+                              {coupon.badge}
+                            </span>
+                            <span>{coupon.expires}</span>
+                          </div>
+                          <div className="text-sm sm:text-base font-semibold flex items-center gap-2">
+                            <Gift className="h-4 w-4 text-amber-300" />
+                            {coupon.title}
+                          </div>
+                          <p className="text-xs sm:text-sm text-white/65">
+                            {coupon.description}
+                          </p>
+                        </div>
+                        <div className="flex flex-col items-start gap-2 md:items-end">
+                          <div className="flex items-center gap-2 rounded-full bg-white text-slate-900 px-3 py-1 text-xs sm:text-sm font-semibold shadow-md">
+                            <QrCode className="h-4 w-4" />
+                            {coupon.code}
+                          </div>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="border-white/30 text-white hover:bg-white hover:text-slate-900"
+                            onClick={() => handleCopy(coupon.code)}
+                          >
+                            {copiedCode === coupon.code ? (
+                              <>
+                                <CheckCircle2 className="mr-2 h-4 w-4 text-emerald-400" />
+                                Copied
+                              </>
+                            ) : (
+                              <>
+                                <Copy className="mr-2 h-4 w-4" />
+                                Copy code
+                              </>
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <h3 className="text-xl font-bold mb-2 text-primary-foreground">
-                  Annual Plan
-                </h3>
-                <div className="text-3xl font-bold mb-6 text-primary-foreground">
-                  $290
-                  <span className="text-lg text-primary-foreground/70 font-normal">
-                    /year
-                  </span>
+
+                {/* Inline paid ads strip */}
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-5">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-3">
+                    <div className="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-white/60">
+                      <div className="h-px w-6 bg-white/30" />
+                      Sponsored placements
+                    </div>
+                    <Button
+                      size="xs"
+                      variant="ghost"
+                      className="h-7 px-2 text-[11px] text-white/70 hover:bg-white/10"
+                    >
+                      <Megaphone className="mr-1.5 h-3.5 w-3.5" />
+                      Promote your brand here
+                    </Button>
+                  </div>
+                  <div className="grid gap-3 md:grid-cols-3">
+                    {sponsoredAds.map((ad) => (
+                      <div
+                        key={ad.title}
+                        className="rounded-xl border border-white/10 bg-black/20 p-3 text-xs sm:text-sm flex flex-col justify-between"
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-[10px] uppercase tracking-[0.2em] text-white/55">
+                            {ad.tag}
+                          </span>
+                          <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] text-amber-200">
+                            {ad.accent}
+                          </span>
+                        </div>
+                        <div className="mt-2">
+                          <p className="font-semibold text-xs sm:text-sm">
+                            {ad.title}
+                          </p>
+                          <p className="mt-1 text-[11px] text-white/70">
+                            {ad.description}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          className="mt-3 inline-flex items-center justify-center rounded-full border border-white/25 bg-white/5 px-3 py-1 text-[11px] font-medium text-white hover:bg-white hover:text-slate-900 transition"
+                        >
+                          {ad.cta}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <ul className="space-y-3 mb-8 text-primary-foreground/90">
-                  <li className="flex items-center gap-2">
-                    <Check className="h-4 w-4" /> 10,000 Coupons per Batch
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="h-4 w-4" /> Full Customer Data Access
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="h-4 w-4" /> Priority Support
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="h-4 w-4" /> Multi-Location Support
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="h-4 w-4" /> Advanced Automation
-                  </li>
-                </ul>
-                <Button className="w-full bg-white text-primary hover:bg-white/90">
-                  Choose Annual
-                </Button>
               </div>
             </div>
           </div>

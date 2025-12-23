@@ -15,7 +15,11 @@ export default function MerchantDashboardContainer() {
   const subscriptionType = session?.user?.subscriptionType || "temporary";
   const credits = 2500;
   const kpiData = getKpiData(credits);
-  const tabs = getDashboardTabs({ kpiData, recentRedemptions });
+  const tabs = getDashboardTabs({
+    kpiData,
+    recentRedemptions,
+    subscriptionType,
+  });
 
   return (
     <div className="space-y-6">

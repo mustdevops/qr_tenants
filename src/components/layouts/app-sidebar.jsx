@@ -119,13 +119,28 @@ export function AppSidebar({
       url: "/merchant/lucky-draw",
       icon: Gift,
     },
-    // Only show Customer Data for annual subscribers
+    // Annual-only sections
     ...(subscriptionType === "annual"
       ? [
           {
             title: "Customer Data",
             url: "/merchant/customer-data",
             icon: Database,
+          },
+          {
+            title: "Analytics",
+            url: "/merchant/analytics",
+            icon: BarChart3,
+          },
+          {
+            title: "Data Export",
+            url: "/merchant/analytics",
+            icon: FileText,
+          },
+          {
+            title: "Templates",
+            url: "/merchant/campaigns",
+            icon: Settings,
           },
         ]
       : []),

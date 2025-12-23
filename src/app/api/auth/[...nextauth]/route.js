@@ -25,13 +25,26 @@ export const authOptions = {
             console.log("API response:", data);
 
             if (data?.access_token && data?.user) {
+              // Try to infer merchant subscription type (annual vs temporary)
+              const subscriptionType =
+                data.user.subscriptionType ||
+                data.user.subscription_type ||
+                data.user.merchantType ||
+                data.user.merchant_type ||
+                data.merchantType ||
+                data.merchant_type ||
+                data?.merchant?.merchant_type ||
+                data?.merchant?.merchantType ||
+                "temporary";
+
               return {
                 id: data.user.id,
                 email: data.user.email,
                 name: data.user.name,
                 avatar: data.user.avatar,
                 access_token: data.access_token,
-                role: data.user.role.toLowerCase(),
+                role: data.user.role?.toLowerCase?.() || data.user.role,
+                subscriptionType,
               };
             }
             console.log("Invalid response: missing access_token or user");
@@ -50,6 +63,13 @@ export const authOptions = {
         token.email = user.email ?? token.email;
         token.accessToken = user.access_token ?? user.accessToken ?? token.accessToken;
         token.role = user.role ?? token.role;
+        token.subscriptionType =
+          user.subscriptionType ||
+          user.subscription_type ||
+          user.merchantType ||
+          user.merchant_type ||
+          token.subscriptionType ||
+          "temporary";
       }
       return token;
     },
@@ -58,6 +78,8 @@ export const authOptions = {
       if (token?.id) session.user.id = token.id;
       if (token?.email) session.user.email = token.email;
       if (token?.role) session.user.role = token.role;
+      if (token?.subscriptionType)
+        session.user.subscriptionType = token.subscriptionType;
       if (token?.accessToken) session.accessToken = token.accessToken;
       return session;
     },

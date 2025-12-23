@@ -14,16 +14,14 @@ const variantClasses = {
     "bg-gradient-to-br from-slate-50 via-white to-slate-100 border-slate-200 text-slate-900",
 };
 
-import { forwardRef } from "react";
-
-export const TemplateCard = forwardRef(({
+export function TemplateCard({
   template,
   content,
   selected,
   disabled,
   onSelect,
   onPreview,
-}, ref) => {
+}) {
   const body = {
     header: content?.header || template?.header || "Header",
     title: content?.title || template?.title || "Title",
@@ -32,7 +30,6 @@ export const TemplateCard = forwardRef(({
 
   return (
     <button
-      ref={ref}
       type="button"
       onClick={() => {
         if (!disabled) {
@@ -41,16 +38,13 @@ export const TemplateCard = forwardRef(({
         }
       }}
       className={cn(
-        "group relative w-full overflow-hidden rounded-xl border p-4 text-left shadow-sm transition hover:-translate-y-1 hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
+        "group relative w-full overflow-hidden rounded-xl border p-4 text-left shadow-sm transition hover:-translate-y-1 hover:shadow-lg focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-primary",
         variantClasses[template.styleVariant],
         disabled && "cursor-not-allowed opacity-60",
         selected && "ring-2 ring-offset-2 ring-primary"
       )}
     >
-      <div className={cn(
-        "text-xs font-semibold uppercase tracking-[0.18em] opacity-70",
-        selected && "pr-24"
-      )}>
+      <div className="text-xs font-semibold uppercase tracking-[0.18em] opacity-70">
         {template.name}
       </div>
 
@@ -75,6 +69,4 @@ export const TemplateCard = forwardRef(({
       )}
     </button>
   );
-});
-
-TemplateCard.displayName = "TemplateCard";
+}

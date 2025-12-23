@@ -92,7 +92,7 @@ export function TemplateSelector({ isAnnual, onChange, cardRef }) {
             disabled={!isAnnual && tpl.id !== selectedId}
             onSelect={() => handleSelect(tpl.id)}
             onPreview={() => setPreviewOpen(true)}
-            ref={tpl.id === selectedId ? cardRef : null} // attach ref to selected card
+            ref={tpl.id === selectedId ? cardRef : null} 
           />
         ))}
       </div>

@@ -90,13 +90,11 @@ const MerchantForm = ({ merchantId, isEdit = false }) => {
       } else {
         // debug payload
         try {
-          // eslint-disable-next-line no-console
           console.debug("Creating merchant payload:", payload);
         } catch (e) {}
 
         resp = await createMerchant(payload);
         try {
-          // eslint-disable-next-line no-console
           console.debug("Create merchant response:", resp);
         } catch (e) {}
       }

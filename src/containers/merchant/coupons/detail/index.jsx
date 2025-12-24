@@ -109,21 +109,17 @@ export default function MerchantCouponDetailContainer() {
         "Status",
         "Issued At",
         "Redeemed At",
-        "Customer",
       ];
       const tableRows = [];
 
       allCoupons.forEach((c) => {
-        const customerInfo = c.customer
-          ? `${c.customer.name || ""}\n${c.customer.email || ""}`
-          : "";
+       
 
         const rowData = [
           c.coupon_code || "-",
           c.status || "-",
           c.issued_at ? new Date(c.issued_at).toLocaleString() : "-",
           c.redeemed_at ? new Date(c.redeemed_at).toLocaleString() : "-",
-          customerInfo,
         ];
         tableRows.push(rowData);
       });

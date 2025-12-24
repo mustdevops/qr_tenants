@@ -198,14 +198,14 @@ export default function AnnualWalletView({
                 </span>
               ))}
             </div>
-            <Button
+            {/* <Button
               className="w-full"
               variant="outline"
               disabled={validating}
               onClick={onValidate}
             >
               {validating ? "Validating..." : "Validate balance before actions"}
-            </Button>
+            </Button> */}
           </CardContent>
         </Card>
 

@@ -57,6 +57,7 @@ export function TemplateSelector({ isAnnual, onChange, cardRef }) {
 
         <div className="flex gap-2">
           <Button
+            type="button"
             variant="outline"
             size="sm"
             onClick={() => setEditorOpen(true)}
@@ -65,6 +66,7 @@ export function TemplateSelector({ isAnnual, onChange, cardRef }) {
           </Button>
 
           <Button
+            type="button"
             variant="secondary"
             size="sm"
             onClick={() => setPreviewOpen(true)}

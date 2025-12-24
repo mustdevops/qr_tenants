@@ -372,7 +372,7 @@ export default function AnnualWalletView({
         merchantType="ANNUAL"
       />
 
-      <section className="space-y-3">
+      {/* <section className="space-y-3">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-xl font-semibold">Batch-wise usage</h2>
@@ -407,7 +407,7 @@ export default function AnnualWalletView({
             />
           </CardContent>
         </Card>
-      </section>
+      </section> */}
 
       <section className="space-y-3">
         <div className="flex items-center justify-between">

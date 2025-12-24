@@ -252,8 +252,8 @@ export default function MerchantCouponDetailContainer() {
               <p className="text-xs text-muted-foreground">
                 {batch.total_quantity > 0
                   ? Math.round(
-                    (batch.issued_quantity / batch.total_quantity) * 100
-                  )
+                      (batch.issued_quantity / batch.total_quantity) * 100
+                    )
                   : 0}
                 % Utilized
               </p>
@@ -287,7 +287,7 @@ export default function MerchantCouponDetailContainer() {
         </CardHeader>
         <CardContent>
           <TableToolbar
-            placeholder="Search code or customer..."
+            placeholder="Search code..."
             onSearchChange={setSearch}
             rightSlot={
               <div className="flex items-center gap-2">

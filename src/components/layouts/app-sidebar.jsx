@@ -100,11 +100,11 @@ export function AppSidebar({
       url: "/merchant/coupons",
       icon: Ticket,
     },
-    {
+    /*{
       title: tMerchant("serialCodes"),
       url: "/merchant/serial-codes",
       icon: Hash,
-    },
+    },*/
     {
       title: tMerchant("wallet"),
       url: "/merchant/wallet",

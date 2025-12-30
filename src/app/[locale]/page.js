@@ -289,6 +289,71 @@ export default function LandingPage() {
           </div>
         </section>
 
+
+        {/* Strategy: Full-Width Leaderboard Ad */}
+        <section className="px-6 lg:px-10 pb-8 flex justify-center">
+          <div className="w-full max-w-7xl mx-auto">
+            <div className="relative overflow-hidden rounded-xl bg-slate-900 shadow-xl border border-slate-800">
+              <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_25%,rgba(68,68,68,.2)_50%,transparent_75%,transparent_100%)] bg-[length:250%_250%] hover:animate-shine" />
+              <div className="flex flex-col md:flex-row items-center justify-between p-6 md:p-8 relative z-10 gap-6">
+                <div className="text-center md:text-left">
+                  <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500 text-slate-900 uppercase tracking-wide mb-2">Exclusive Offer</span>
+                  <h3 className="text-2xl md:text-3xl font-extrabold text-white mb-2">
+                    Scale your SaaS with <span className="text-amber-400">CloudScale Pro</span>
+                  </h3>
+                  <p className="text-slate-300 max-w-xl">
+                    Get $500 in free credits when you sign up today. Limited time offer for QR Rev users.
+                  </p>
+                </div>
+                <button className="whitespace-nowrap rounded-lg bg-amber-500 px-6 py-3 text-sm font-bold text-slate-900 shadow-lg transition-transform hover:scale-105 active:scale-95">
+                  Claim $500 Credits
+                </button>
+              </div>
+            </div>
+            <div className="text-center mt-2">
+              <span className="text-[10px] uppercase text-slate-400 tracking-widest">Sponsored Advertisement</span>
+            </div>
+          </div>
+        </section>
+
+        {/* Strategy: Featured Partners Grid */}
+        <section className="bg-slate-50 py-16 border-t border-slate-200">
+          <div className="px-6 lg:px-10 max-w-7xl mx-auto">
+            <div className="flex items-center justify-between mb-8">
+              <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                <Megaphone className="w-5 h-5 text-indigo-600" />
+                Featured Partners
+              </h3>
+              <a href="#" className="text-sm font-medium text-indigo-600 hover:text-indigo-800 flex items-center gap-1">
+                Advertise with us <ArrowRight className="w-3 h-3" />
+              </a>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+              {[
+                { title: "TechGear", desc: "Enterprise Hardware Solutions", img: "bg-blue-50", textColor: "text-blue-600", tag: "Tech" },
+                { title: "GrowthFlow", desc: "Marketing Automation SaaS", img: "bg-purple-50", textColor: "text-purple-600", tag: "SaaS" },
+                { title: "SecureNet", desc: "Cybersecurity for Startups", img: "bg-emerald-50", textColor: "text-emerald-600", tag: "Security" },
+                { title: "DataViz", desc: "AI-Powered Analytics", img: "bg-rose-50", textColor: "text-rose-600", tag: "AI" },
+              ].map((ad, idx) => (
+                <div key={idx} className="group relative bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-shadow">
+                  <div className={`h-32 ${ad.img} flex items-center justify-center`}>
+                    <span className={`text-4xl font-black uppercase tracking-widest opacity-20 ${ad.textColor}`}>{ad.tag}</span>
+                  </div>
+                  <span className="absolute top-2 right-2 bg-white/80 backdrop-blur border border-slate-200 text-slate-500 text-[9px] font-bold px-1.5 py-0.5 rounded">AD</span>
+                  <div className="p-4">
+                    <h4 className="font-bold text-slate-900">{ad.title}</h4>
+                    <p className="text-xs text-slate-500 mb-4">{ad.desc}</p>
+                    <button className="text-indigo-600 text-xs font-bold uppercase tracking-wide group-hover:underline">
+                      Learn More
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* Features Grid */}
         <section className="bg-slate-50 py-20 lg:py-32">
           <div className="px-6 lg:px-10 max-w-7xl mx-auto">
@@ -334,6 +399,31 @@ export default function LandingPage() {
                 <p className="text-muted-foreground">
                   {tFeatures("card3Description")}
                 </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Strategy: Native Inline Ad */}
+        <section className="px-6 lg:px-10 py-12 flex justify-center bg-white">
+          <div className="w-full max-w-4xl mx-auto border-y border-slate-100 py-8">
+            <div className="flex flex-col sm:flex-row items-center gap-6">
+              <div className="w-full sm:w-1/3 aspect-video bg-slate-100 rounded-lg flex items-center justify-center relative overflow-hidden">
+                <div className="absolute inset-0 bg-slate-200 animate-pulse"></div>
+                <span className="relative z-10 text-slate-400 font-bold">AD IMAGE</span>
+              </div>
+              <div className="flex-1 text-center sm:text-left">
+                <div className="flex items-center justify-center sm:justify-start gap-2 mb-2">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest border px-1.5 rounded">Sponsored</span>
+                  <span className="text-xs font-semibold text-slate-600">MasterClass</span>
+                </div>
+                <h4 className="text-lg font-bold text-slate-900 mb-2">Unlock Your Potential with Expert-Led Courses</h4>
+                <p className="text-sm text-slate-500 mb-4">
+                  Join millions of learners. Get unlimited access to 180+ classes taught by the world's best.
+                </p>
+                <button className="text-sm font-semibold text-indigo-600 hover:text-indigo-800 flex items-center justify-center sm:justify-start gap-1 group">
+                  Start Learning <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
+                </button>
               </div>
             </div>
           </div>
@@ -394,6 +484,7 @@ export default function LandingPage() {
           </div>
         </section>
 
+        {/* Merchants, coupons & paid ads */}
         <section className="relative overflow-hidden bg-linear-to-b from-slate-950 via-slate-900 to-black text-white py-20 lg:py-32">
           <div className="absolute inset-0 pointer-events-none opacity-20 bg-[radial-gradient(circle_at_top,#38bdf880,transparent_40%),radial-gradient(circle_at_bottom,#a855f780,transparent_45%)]" />
           <div className="px-6 lg:px-10 max-w-7xl mx-auto relative">
@@ -451,11 +542,10 @@ export default function LandingPage() {
                         key={merchant.id}
                         type="button"
                         onClick={() => setSelectedMerchantId(merchant.id)}
-                        className={`w-full text-left rounded-xl border px-3.5 py-3 transition flex flex-col gap-1.5 ${
-                          isActive
-                            ? "border-emerald-400/70 bg-emerald-400/10 shadow-[0_0_0_1px_rgba(16,185,129,0.5)]"
-                            : "border-white/5 bg-black/20 hover:border-white/30 hover:bg-white/5"
-                        }`}
+                        className={`w-full text-left rounded-xl border px-3.5 py-3 transition flex flex-col gap-1.5 ${isActive
+                          ? "border-emerald-400/70 bg-emerald-400/10 shadow-[0_0_0_1px_rgba(16,185,129,0.5)]"
+                          : "border-white/5 bg-black/20 hover:border-white/30 hover:bg-white/5"
+                          }`}
                       >
                         <div className="flex items-center justify-between gap-2">
                           <div className="flex items-center gap-2">
@@ -638,6 +728,6 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
-    </div>
+    </div >
   );
 }

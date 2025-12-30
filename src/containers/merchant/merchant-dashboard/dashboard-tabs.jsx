@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import MerchantCouponsListingContainer from "@/containers/merchant/coupons/listing";
 import MerchantWalletContainer from "@/containers/merchant/wallet";
 import MerchantAnalyticsContainer from "@/containers/merchant/analytics";
+import MerchantFeedbackFormContainer from "@/containers/merchant/merchant-feedbackform";
 
 export const getDashboardTabs = ({
   kpiData,
@@ -92,6 +93,13 @@ export const getDashboardTabs = ({
       ]
       : []),
     {
+      value: "feedback-form",
+      label: "Feedback Form",
+      content: (
+        <MerchantFeedbackFormContainer />
+      ),
+    },
+    {
       value: "settings",
       label: "Settings",
       content: (
@@ -107,5 +115,6 @@ export const getDashboardTabs = ({
         </Card>
       ),
     },
+
   ];
 };

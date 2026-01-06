@@ -31,9 +31,8 @@ export default function AgentSupportContainer() {
               <div
                 key={ticket.id}
                 onClick={() => setSelectedTicket(ticket)}
-                className={`p-4 border-b cursor-pointer hover:bg-muted/50 transition-colors ${
-                  selectedTicket?.id === ticket.id ? "bg-muted" : ""
-                }`}
+                className={`p-4 border-b cursor-pointer hover:bg-muted/50 transition-colors ${selectedTicket?.id === ticket.id ? "bg-muted" : ""
+                  }`}
               >
                 <div className="flex justify-between items-start mb-1">
                   <span className="font-semibold truncate">
@@ -101,7 +100,7 @@ export default function AgentSupportContainer() {
                   <div className="flex gap-2">
                     <Textarea
                       placeholder="Type your reply..."
-                      className="min-h-[80px]"
+                      className="min-h-20"
                     />
                     <Button className="h-auto self-end">
                       <Send className="h-4 w-4" />

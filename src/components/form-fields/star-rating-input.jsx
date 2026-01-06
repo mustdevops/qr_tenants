@@ -1,7 +1,15 @@
+"use client";
+import { useEffect, useState } from "react";
 
-import { useEffect, useState } from 'react';
-
-const StarRatingInput = ({ label, name, register, setValue, error, value, validation = {} }) => {
+const StarRatingInput = ({
+  label,
+  name,
+  register,
+  setValue,
+  error,
+  value,
+  validation = {},
+}) => {
   const [rating, setRating] = useState(value || 0);
 
   // Sync local rating state with value prop
@@ -25,13 +33,18 @@ const StarRatingInput = ({ label, name, register, setValue, error, value, valida
           <span
             key={i}
             onClick={() => handleSelect(i + 1)}
-            className={`cursor-pointer text-2xl ${i < rating ? 'text-yellow-400' : 'text-gray-300'}`}
+            className={`cursor-pointer text-2xl ${
+              i < rating ? "text-yellow-400" : "text-gray-300"
+            }`}
           >
             ★
           </span>
         ))}
       </div>
-      <input type="hidden" {...register(name, { required: 'Rating is required' })} />
+      <input
+        type="hidden"
+        {...register(name, { required: "Rating is required" })}
+      />
       {error && <p className="text-red-500 text-sm">{error.message}</p>}
     </div>
   );

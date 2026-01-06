@@ -17,6 +17,7 @@ import {
   Database,
   Settings,
   ShoppingCart,
+  Package,
 } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { getTextDirection } from "@/i18n/routing";
@@ -65,6 +66,11 @@ export function AppSidebar({
       title: tAgent("wallet"),
       url: "/agent/wallet",
       icon: Wallet,
+    },
+    {
+      title: "Packages",
+      url: "/agent/packages",
+      icon: Package,
     },
     {
       title: tAgent("earnings"),

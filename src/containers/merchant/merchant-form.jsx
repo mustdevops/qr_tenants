@@ -12,7 +12,7 @@ import {
 import { LoadingSpinner } from "@/helper/Loader";
 import { toast } from "sonner";
 import { useRouter } from "@/i18n/routing";
-import { Store, Database, Info, Save, X } from "lucide-react";
+import { Store, Save } from "lucide-react";
 import { createMerchant, updateMerchant } from "@/lib/services/helper";
 import { useSession } from "next-auth/react";
 import {
@@ -25,17 +25,10 @@ import {
 } from "@/components/form-fields";
 import AddressAutocomplete from "@/components/address-autocomplete";
 
-const statusOptions = [
-  { value: "active", label: "Active" },
-  { value: "inactive", label: "Inactive" },
-  { value: "suspended", label: "Suspended" },
-];
-
 const MerchantForm = ({ merchantId, isEdit = false }) => {
   const router = useRouter();
   const { data: session } = useSession();
   const [isFormSubmitting, setIsFormSubmitting] = useState(false);
-  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const {
     register,

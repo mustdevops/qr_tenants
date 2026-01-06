@@ -1,6 +1,6 @@
-import React from 'react';
-import { Controller } from 'react-hook-form';
-import { Label } from '@/components/ui/label';
+import React from "react";
+import { Controller } from "react-hook-form";
+import { Label } from "@/components/ui/label";
 
 /**
  * CameraFileField - file input that opens camera on mobile devices
@@ -17,14 +17,14 @@ import { Label } from '@/components/ui/label';
  * - multiple: boolean
  * - onChange: callback
  */
-export function CameraFileField({
+export default function CameraFileField({
   label,
   name,
   control,
   errors,
   validation = {},
-  accept = 'image/*',
-  capture = 'environment',
+  accept = "image/*",
+  capture = "environment",
   multiple = false,
   onChange,
   ...props
@@ -46,7 +46,7 @@ export function CameraFileField({
             accept={accept}
             capture={capture}
             multiple={multiple}
-            onChange={e => {
+            onChange={(e) => {
               const files = e.target.files;
               fieldOnChange(files);
               if (onChange) onChange(e);

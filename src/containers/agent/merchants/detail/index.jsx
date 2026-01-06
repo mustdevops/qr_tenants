@@ -25,31 +25,29 @@ export default function AgentMerchantDetailContainer({ params }) {
 
     useEffect(() => {
         if (!id) return;
-        setLoading(true);
-        setError(null);
 
-        try {
-            const base = axiosInstance?.defaults?.baseURL || "";
-            const url = `${base.replace(/\/$/, "")}/merchants/${id}`.replace(/:\/\//, "__TEMP__").replace(/__TEMP__/,'://');
-            console.debug("Fetching merchant details", { id, baseURL: axiosInstance?.defaults?.baseURL, url });
+        const fetchMerchant = async () => {
+            setLoading(true);
+            setError(null);
 
-            axiosInstance
-                .get(`/merchants/${id}`)
-                .then((res) => {
-                    const payload = res?.data?.data || res?.data || null;
-                    console.debug("Merchant fetch response", { payload, status: res?.status });
-                    setMerchant(payload);
-                })
-                .catch((err) => {
-                    console.error("Failed to fetch merchant:", err?.message || err, err?.response?.status, err?.response?.data);
-                    setError(err);
-                })
-                .finally(() => setLoading(false));
-        } catch (err) {
-            console.error("Unexpected error while fetching merchant:", err);
-            setError(err);
-            setLoading(false);
-        }
+            try {
+                const base = axiosInstance?.defaults?.baseURL || "";
+                const url = `${base.replace(/\/$/, "")}/merchants/${id}`.replace(/:\/\//, "__TEMP__").replace(/__TEMP__/, '://');
+                console.debug("Fetching merchant details", { id, baseURL: axiosInstance?.defaults?.baseURL, url });
+
+                const res = await axiosInstance.get(`/merchants/${id}`);
+                const payload = res?.data?.data || res?.data || null;
+                console.debug("Merchant fetch response", { payload, status: res?.status });
+                setMerchant(payload);
+            } catch (err) {
+                console.error("Failed to fetch merchant:", err?.message || err, err?.response?.status, err?.response?.data);
+                setError(err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchMerchant();
     }, [id]);
 
     const [page, setPage] = useState(0);
@@ -104,11 +102,12 @@ export default function AgentMerchantDetailContainer({ params }) {
                             </CardHeader>
                             <CardContent className="space-y-6 h-full flex flex-col">
                                 <div className="flex items-start gap-4">
-                                    <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center overflow-hidden flex-shrink-0">
+                                    <div className="h-16 w-16 rounded-full bg-muted flex items-center justify-center overflow-hidden shrink-0">
                                         {merchant?.user?.avatar ? (
+                                            /* eslint-disable-next-line @next/next/no-img-element */
                                             <img src={merchant.user.avatar} alt={merchant.user.name} className="h-16 w-16 object-cover" />
                                         ) : (
-                                            <span className="text-sm">{(merchant?.user?.name || "").split(" ").map(n => n[0]).slice(0,2).join("")}</span>
+                                            <span className="text-sm">{(merchant?.user?.name || "").split(" ").map(n => n[0]).slice(0, 2).join("")}</span>
                                         )}
                                     </div>
                                     <div className="flex-1">

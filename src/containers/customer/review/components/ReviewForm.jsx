@@ -130,22 +130,33 @@ export const ReviewForm = ({
       // Map 'red' to 'xiaohongshu' as required by backend
       const mappedPlatform = platformId === "red" ? "xiaohongshu" : platformId;
 
+      // Safety check for numeric values to prevent NaN 500 errors
+      const safeMerchantId = parseInt(merchantId);
+      const safeBatchId = parseInt(batchId);
+      const safeRating = parseInt(formValues.rating) || 5;
+      const safePresetId = isPresetReview ? parseInt(selectedPresetId) : null;
+
       const payload = {
-        merchantId: parseInt(merchantId),
-        coupon_batch_id: parseInt(batchId),
+        merchantId: isNaN(safeMerchantId) ? 1 : safeMerchantId,
         email: formValues.email,
         name: formValues.name,
         phoneNumber: formValues.phone,
-        date_of_birth: formValues.dob,
+        date_of_birth: formValues.dob || null,
         address: formValues.address,
         gender: formValues.gender,
-        rating: formValues.rating,
+        rating: safeRating,
         reviewType: isPresetReview ? "preset" : "custom",
-        presetReviewId: isPresetReview ? selectedPresetId : undefined,
-        comment: !isPresetReview ? formValues.text : undefined,
-        selectedPlatform: mappedPlatform, // Backend requires this in POST
+        presetReviewId: isNaN(safePresetId) ? null : safePresetId,
+        customReviewText: !isPresetReview ? formValues.text : null,
+        comment: formValues.text || "No específico feedback provided",
+        selectedPlatform: mappedPlatform,
         redirectCompleted: false,
       };
+
+      // Only add batch ID if it's a valid number to avoid foreign key errors
+      if (!isNaN(safeBatchId)) {
+        payload.coupon_batch_id = safeBatchId;
+      }
 
       // 1. Submit feedback to system
       const response = await axiosInstance.post("/feedbacks", payload);
@@ -178,7 +189,8 @@ export const ReviewForm = ({
       }
     } catch (error) {
       console.error("Platform Redirect Error:", error);
-      toast.error("Failed to submit feedback");
+      const errorMsg = error.response?.data?.message || "Internal server error. Ensure your Email and Phone are unique!";
+      toast.error(errorMsg);
     } finally {
       setLoading(false);
     }

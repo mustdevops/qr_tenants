@@ -37,48 +37,6 @@ export const getDashboardTabs = ({
           </div>
 
           {/* Integrated Analytics (annual only) */}
-          {isAnnual ? (
-            <>
-              <div className="flex flex-col space-y-1.5 mb-6">
-                <h2 className="text-2xl font-bold tracking-tight">
-                  Analytics Overview
-                </h2>
-                <p className="text-muted-foreground">
-                  Track your coupon performance, redemptions, and customer
-                  engagement.
-                </p>
-              </div>
-              <MerchantAnalyticsContainer
-                embedded={true}
-                creditsUsed={creditStats?.creditsUsed}
-              />
-            </>
-          ) : (
-            <Card className="border-dashed">
-              <CardHeader>
-                <CardTitle className="text-base">
-                  Analytics & exports (Annual only)
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-sm text-muted-foreground space-y-2">
-                <p>
-                  Annual merchants get full analytics, exports, and customer
-                  data visibility. Temporary merchants have limited dashboards
-                  and higher WhatsApp credit costs.
-                </p>
-                <div className="flex gap-2">
-                  <Link href="/en/merchant/coupons/create">
-                    <Button size="sm">Create batch</Button>
-                  </Link>
-                  <Link href="/en/merchant/campaigns">
-                    <Button size="sm" variant="outline">
-                      Review campaigns
-                    </Button>
-                  </Link>
-                </div>
-              </CardContent>
-            </Card>
-          )}
         </div>
       ),
     },

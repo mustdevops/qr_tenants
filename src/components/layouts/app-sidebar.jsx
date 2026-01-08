@@ -139,23 +139,8 @@ export function AppSidebar({
             url: "/merchant/customer-data",
             icon: Database,
           },
-          /*{
-            title: "Analytics",
-            url: "/merchant/analytics",
-            icon: BarChart3,
-          },*/
-          {
-            title: "Data Export",
-            url: "/merchant/analytics",
-            icon: FileText,
-          },
         ]
       : []),
-    {
-      title: tMerchant("ads"),
-      url: "/merchant/ads",
-      icon: Settings,
-    },
   ];
 
   const navItems =

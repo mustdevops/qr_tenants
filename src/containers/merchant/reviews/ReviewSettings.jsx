@@ -137,12 +137,12 @@ export default function ReviewSettings() {
       const payload = {
         reviews: config.enablePresetReviews
           ? config.presets.map((text, index) => ({
-              id: index + 1,
-              merchant_id: merchantId,
-              reviewText: text.trim(),
-              isActive: true,
-              displayOrder: index + 1,
-            }))
+            id: index + 1,
+            merchant_id: merchantId,
+            reviewText: text.trim(),
+            isActive: true,
+            displayOrder: index + 1,
+          }))
           : [],
       };
 
@@ -522,11 +522,10 @@ export default function ReviewSettings() {
               <Label className="text-base font-semibold">Reward Strategy</Label>
               <div className="grid grid-cols-1 gap-3">
                 <div
-                  className={`cursor-pointer border-2 rounded-lg p-4 transition-all ${
-                    config.rewardType === "none"
+                  className={`cursor-pointer border-2 rounded-lg p-4 transition-all ${config.rewardType === "none"
                       ? "border-primary bg-primary/10 shadow-sm"
                       : "border-muted/60 bg-muted/20 hover:border-primary/40 hover:bg-primary/5"
-                  }`}
+                    }`}
                   onClick={() => setConfig({ ...config, rewardType: "none" })}
                 >
                   <div className="font-semibold mb-1.5">No Reward</div>
@@ -535,11 +534,10 @@ export default function ReviewSettings() {
                   </div>
                 </div>
                 <div
-                  className={`cursor-pointer border-2 rounded-lg p-4 transition-all ${
-                    config.rewardType === "coupon"
+                  className={`cursor-pointer border-2 rounded-lg p-4 transition-all ${config.rewardType === "coupon"
                       ? "border-primary bg-primary/10 shadow-sm"
                       : "border-muted/60 bg-muted/20 hover:border-primary/40 hover:bg-primary/5"
-                  }`}
+                    }`}
                   onClick={() => setConfig({ ...config, rewardType: "coupon" })}
                 >
                   <div className="font-semibold mb-1.5">Direct Coupon</div>
@@ -548,11 +546,10 @@ export default function ReviewSettings() {
                   </div>
                 </div>
                 <div
-                  className={`cursor-pointer border-2 rounded-lg p-4 transition-all ${
-                    config.rewardType === "lucky_draw"
+                  className={`cursor-pointer border-2 rounded-lg p-4 transition-all ${config.rewardType === "lucky_draw"
                       ? "border-primary bg-primary/10 shadow-sm"
                       : "border-muted/60 bg-muted/20 hover:border-primary/40 hover:bg-primary/5"
-                  }`}
+                    }`}
                   onClick={() =>
                     setConfig({ ...config, rewardType: "lucky_draw" })
                   }

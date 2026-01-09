@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import {
   Card,
   CardContent,
@@ -21,10 +22,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2, Store, User, CreditCard } from "lucide-react";
+import { Loader2, Store, User, CreditCard, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { createMerchant, updateMerchant } from "@/lib/services/helper";
 import AddressAutocomplete from "@/components/address-autocomplete";
+import { cn } from "@/lib/utils";
 
 /**
  * MerchantForm - Create or Edit Merchant
@@ -37,6 +39,7 @@ export function MerchantForm({ initialData = null, isEdit = false, merchantId = 
   const router = useRouter();
   const { data: session } = useSession();
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -53,6 +56,7 @@ export function MerchantForm({ initialData = null, isEdit = false, merchantId = 
     latitude: "",
     longitude: "",
     tax_id: "",
+    is_active: true,
   });
 
   // Populate form when initialData is provided (edit mode)
@@ -78,6 +82,7 @@ export function MerchantForm({ initialData = null, isEdit = false, merchantId = 
         latitude: initialData.latitude || "",
         longitude: initialData.longitude || "",
         tax_id: initialData.tax_id || initialData.taxId || "",
+        is_active: initialData.is_active !== undefined ? initialData.is_active : (initialData.isActive ?? true),
       });
     }
   }, [isEdit, initialData]);
@@ -106,6 +111,7 @@ export function MerchantForm({ initialData = null, isEdit = false, merchantId = 
         latitude: parseFloat(formData.latitude) || null,
         longitude: parseFloat(formData.longitude) || null,
         tax_id: formData.tax_id,
+        is_active: formData.is_active,
       };
 
       // Only include password if it's provided (for create or password change)
@@ -175,14 +181,29 @@ export function MerchantForm({ initialData = null, isEdit = false, merchantId = 
             <Label htmlFor="password">
               {isEdit ? "New Password (leave blank to keep current)" : "Initial Password"}
             </Label>
-            <Input
-              id="password"
-              type="password"
-              required={!isEdit}
-              value={formData.password}
-              onChange={(e) => handleChange("password", e.target.value)}
-              placeholder={isEdit ? "••••••••" : ""}
-            />
+            <div className="relative">
+              <Input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                required={!isEdit}
+                value={formData.password}
+                onChange={(e) => handleChange("password", e.target.value)}
+                placeholder={isEdit ? "••••••••" : ""}
+                className="pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                title={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+              </button>
+            </div>
           </div>
           <div className="space-y-2">
             <Label htmlFor="role">Role</Label>
@@ -340,6 +361,27 @@ export function MerchantForm({ initialData = null, isEdit = false, merchantId = 
                   <SelectItem value="temporary">Temporary</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between p-4 rounded-lg border bg-zinc-50/50 dark:bg-zinc-800/30">
+            <div className="space-y-0.5">
+              <Label className="text-base">Account Status</Label>
+              <CardDescription>
+                Enable or disable this merchant's access to the platform.
+              </CardDescription>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className={cn(
+                "text-sm font-medium",
+                formData.is_active ? "text-emerald-600" : "text-zinc-500"
+              )}>
+                {formData.is_active ? "Active" : "Inactive"}
+              </span>
+              <Switch
+                checked={formData.is_active}
+                onCheckedChange={(checked) => handleChange("is_active", checked)}
+              />
             </div>
           </div>
         </CardContent>

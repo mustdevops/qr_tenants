@@ -55,7 +55,7 @@ export const RedirectWait = ({ nextStep, prevStep, merchantConfig }) => {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[80vh] w-full max-w-2xl mx-auto p-2 md:p-4">
-      <Card className="w-full border-white/20 dark:border-zinc-800/50 bg-white/70 dark:bg-zinc-900/70 backdrop-blur-2xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] dark:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] overflow-hidden rounded-[2rem] text-center">
+      <Card className="w-full border-white/20 dark:border-zinc-800/50 bg-white/70 dark:bg-zinc-900/70 backdrop-blur-2xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] dark:shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] overflow-hidden rounded-4xl text-center">
         {/* Merchant Branding Banner */}
         <div className="relative h-32 md:h-44 overflow-hidden bg-linear-to-br from-zinc-950 via-zinc-800 to-zinc-900">
           <div className="absolute inset-0 opacity-30 bg-[radial-gradient(circle_at_50%_120%,rgba(16,185,129,0.3),rgba(16,185,129,0))]"></div>
@@ -65,11 +65,17 @@ export const RedirectWait = ({ nextStep, prevStep, merchantConfig }) => {
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 text-white">
             {merchantConfig?.logo && (
               <div className="mb-3 w-12 h-12 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 p-2 overflow-hidden shadow-2xl">
-                <img src={merchantConfig.logo} alt="Merchant Logo" className="w-full h-full object-contain" />
+                <img
+                  src={merchantConfig.logo}
+                  alt="Merchant Logo"
+                  className="w-full h-full object-contain"
+                />
               </div>
             )}
             <h2 className="text-2xl md:text-3xl font-black tracking-tighter mb-2 drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
-              {merchantConfig?.name && merchantConfig.name !== "Loading..." ? merchantConfig.name : "System Sync"}
+              {merchantConfig?.name && merchantConfig.name !== "Loading..."
+                ? merchantConfig.name
+                : "System Sync"}
             </h2>
           </div>
         </div>
@@ -88,12 +94,18 @@ export const RedirectWait = ({ nextStep, prevStep, merchantConfig }) => {
           </div>
 
           <div className="mx-auto w-24 h-24 rounded-full bg-linear-to-br from-emerald-500/5 to-emerald-500/20 flex items-center justify-center mb-8 relative group">
-            <div className="absolute inset-[-4px] rounded-full border-2 border-dashed border-emerald-500/30 animate-spin-slow"></div>
+            <div className="absolute -inset-1 rounded-full border-2 border-dashed border-emerald-500/30 animate-spin-slow"></div>
             <div className="absolute inset-0 rounded-full border-4 border-emerald-500/10 border-t-emerald-500 animate-spin group-hover:duration-500"></div>
             <div className="relative z-10 transition-all duration-700 transform scale-125 group-hover:rotate-12">
-              {statusIndex === 0 && <Zap className="w-8 h-8 text-emerald-500" />}
-              {statusIndex === 1 && <ShieldCheck className="w-8 h-8 text-blue-500" />}
-              {statusIndex === 2 && <SquareCheck className="w-8 h-8 text-emerald-400 animate-bounce" />}
+              {statusIndex === 0 && (
+                <Zap className="w-8 h-8 text-emerald-500" />
+              )}
+              {statusIndex === 1 && (
+                <ShieldCheck className="w-8 h-8 text-blue-500" />
+              )}
+              {statusIndex === 2 && (
+                <SquareCheck className="w-8 h-8 text-emerald-400 animate-bounce" />
+              )}
             </div>
           </div>
 
@@ -120,7 +132,8 @@ export const RedirectWait = ({ nextStep, prevStep, merchantConfig }) => {
               <ShieldCheck className="w-12 h-12 text-white" />
             </div>
             <p className="relative z-10 text-[11px] text-zinc-400 leading-relaxed font-black uppercase tracking-[0.2em] italic">
-              "System encryption active. Ensuring your reward token is generated with 100% integrity."
+              "System encryption active. Ensuring your reward token is generated
+              with 100% integrity."
             </p>
           </div>
         </CardContent>

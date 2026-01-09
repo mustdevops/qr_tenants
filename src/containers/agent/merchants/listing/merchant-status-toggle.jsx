@@ -3,24 +3,30 @@
 import { useState } from "react";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
+import { updateMerchant } from "@/lib/services/helper";
 
 export function MerchantStatusToggle({ initialStatus, merchantId }) {
-    const [isActive, setIsActive] = useState(initialStatus === "active");
+    const [isActive, setIsActive] = useState(initialStatus === "active" || initialStatus === true);
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleToggle = async (checked) => {
+        setIsLoading(true);
+        // Store original state to revert if needed
+        const originalState = isActive;
+
         // Optimistic UI update
         setIsActive(checked);
 
-        // In a real app, you would make an API call here.
-        // try {
-        //   await updateMerchantStatus(merchantId, checked ? 'active' : 'inactive');
-        //   toast.success(`Merchant ${checked ? "activated" : "deactivated"} successfully`);
-        // } catch (error) {
-        //   setIsActive(!checked); // Revert on error
-        //   toast.error("Failed to update status");
-        // }
-
-        toast.success(`Merchant status changed to ${checked ? "Active" : "Inactive"}`);
+        try {
+            await updateMerchant(merchantId, { is_active: checked });
+            toast.success(`Merchant ${checked ? "activated" : "deactivated"} successfully`);
+        } catch (error) {
+            console.error("Error toggling merchant status:", error);
+            setIsActive(originalState); // Revert on error
+            toast.error(error?.response?.data?.message || "Failed to update merchant status");
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -28,6 +34,7 @@ export function MerchantStatusToggle({ initialStatus, merchantId }) {
             <Switch
                 checked={isActive}
                 onCheckedChange={handleToggle}
+                disabled={isLoading}
             />
             <span className="text-sm capitalize text-muted-foreground w-[60px]">
                 {isActive ? "Active" : "Inactive"}

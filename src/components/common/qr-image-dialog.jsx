@@ -63,16 +63,16 @@ export default function QRImageDialogHover({
   };
 
   return (
-    <div className="inline-block">
+    <div className="flex">
       <button
         type="button"
-        className={`${sizeClass} rounded overflow-hidden cursor-pointer p-0 border-0 bg-transparent`}
+        className={`${sizeClass} flex items-center justify-center rounded overflow-hidden cursor-pointer p-0 border-0 bg-transparent`}
         onClick={() => setOpen(true)}
         onMouseEnter={triggerEnter}
         onMouseLeave={triggerLeave}
         aria-label={label}
       >
-        <img src={imageBase64} alt={label} className={`${sizeClass} object-cover`} />
+        <img src={imageBase64} alt={label} className={`${sizeClass} block object-cover`} />
       </button>
 
       <Dialog open={open} onOpenChange={(v) => setOpen(v)}>

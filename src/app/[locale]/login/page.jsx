@@ -1,9 +1,10 @@
 "use client";
 
 import { use, useMemo, useState } from "react";
-import { ShieldCheck, QrCode, MessageSquare, Sparkles } from "lucide-react";
+import { ShieldCheck, QrCode, MessageSquare, Sparkles, Eye, EyeOff } from "lucide-react";
 import { useRouter, Link } from "@/i18n/routing";
 import { signIn, getSession } from "next-auth/react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +18,7 @@ export default function LoginPage({ params }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const tSignin = useTranslations("signin");
   const tPlaceholders = useTranslations("placeholders.signin");
   const tValidation = useTranslations("validations.signin");
@@ -84,13 +86,26 @@ export default function LoginPage({ params }) {
     try {
       // Use NextAuth signIn with credentials
       const result = await signIn("credentials", {
-        email: username, // Assuming username is email; adjust if needed
+        username: username, // Send as username for the switch in [...nextauth]
         password,
         redirect: false, // Prevent automatic redirect
       });
 
+      console.log("DEBUG: Full Login Result:", result);
+
       if (result?.error) {
-        setError("Invalid credentials"); // Customize error message
+        // If the error contains 'inactive', show the specific message
+        // Otherwise use the descriptive error OR default to invalid credentials
+        let errorMessage = result.error;
+
+        if (result.error === "CredentialsSignin") {
+          errorMessage = "Invalid email or password. Please check your credentials.";
+        } else if (result.error.toLowerCase().includes("inactive")) {
+          errorMessage = "Your account is inactive. Please contact your agent.";
+        }
+
+        setError(errorMessage);
+        toast.error(errorMessage);
         setLoading(false);
         return;
       }
@@ -186,14 +201,28 @@ export default function LoginPage({ params }) {
                 <label className="text-sm font-medium text-foreground">
                   {tSignin("label5")}
                 </label>
-                <Input
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  autoComplete="current-password"
-                />
+                <div className="relative">
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    autoComplete="current-password"
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
               </div>
 
               {error && (

@@ -12,7 +12,8 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { Separator } from "@radix-ui/react-dropdown-menu";
+import { Separator } from "@/components/ui/separator";
+import { toast } from "sonner";
 
 export default function ProtectedLayout({ children, params }) {
   const locale = use(params);
@@ -28,8 +29,16 @@ export default function ProtectedLayout({ children, params }) {
 
     if (!user) {
       router.push(`/${locale}/login`);
+      return;
     }
-  }, [status, user, router, locale]);
+
+    // Check if account is active for merchants
+    if (role === "merchant" && user.merchantActive === false) {
+      console.warn("Inactive merchant attempted access:", user.email);
+      toast.error("Your account is inactive. Please contact your agent.");
+      router.push(`/${locale}/login`);
+    }
+  }, [status, user, router, locale, role]);
 
   useEffect(() => {
     if (!user) return;
@@ -40,7 +49,7 @@ export default function ProtectedLayout({ children, params }) {
         user,
         pathname: pathnameHook,
       });
-    } catch (e) {}
+    } catch (e) { }
 
     const pathname =
       pathnameHook ||

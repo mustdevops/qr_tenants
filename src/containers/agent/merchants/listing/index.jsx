@@ -21,7 +21,7 @@ export default function AgentMerchantsListingContainer() {
   const [data, setData] = useState([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
-const router =useRouter()
+  const router = useRouter()
 
   useEffect(() => {
     let mounted = true;
@@ -37,9 +37,11 @@ const router =useRouter()
         // Map backend items to table shape
         const mapped = items.map((m) => ({
           id: m.id,
-          name: m.user?.name || m.business_name || "-",
+          name: m.business_name || m.user?.name || "-",
           email: m.user?.email || "",
-          status: m.user?.is_active ? "active" : "inactive",
+          businessType: m.business_type || "-",
+          location: m.city && m.country ? `${m.city}, ${m.country}` : (m.city || m.country || "-"),
+          status: (m.user?.is_active ?? m.is_active) ? "active" : "inactive",
           subscription: m.merchant_type || m.subscription || "-",
           joinDate: m.created_at ? new Date(m.created_at).toLocaleDateString() : "-",
           raw: m,

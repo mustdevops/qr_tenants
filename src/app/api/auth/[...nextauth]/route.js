@@ -24,15 +24,10 @@ export const authOptions = {
 
       async authorize(credentials) {
         try {
-          const payload = credentials?.email
-            ? {
-                email: credentials.email,
-                password: credentials.password,
-              }
-            : {
-                username: credentials.username,
-                password: credentials.password,
-              };
+          const payload = {
+            email: credentials.username, // Using 'username' field from login form
+            password: credentials.password,
+          };
 
           const res = await axios.post(
             `${process.env.NEXT_PUBLIC_API_BASE_URL}/auth/login`,
@@ -40,31 +35,52 @@ export const authOptions = {
           );
 
           const data = res?.data;
-          console.log("API response:", data);
 
-          if (!data?.access_token || !data?.user) {
-            console.error("Invalid login response");
-            return null;
+          // 1. Extract Token
+          const token = data?.access_token || data?.token || data?.accessToken;
+
+          // 2. Extract User Profile
+          const userObj = data?.user || data?.data || data;
+
+          if (!token) return null;
+
+          // 3. Determine Role
+          let role = userObj?.role || data?.role;
+          if (!role && (userObj?.merchant_id || userObj?.merchant)) role = "merchant";
+          const normalizedRole = role?.toLowerCase() || "";
+
+          // 4. Activity Check
+          const isActive =
+            userObj?.is_active ??
+            userObj?.active ??
+            data?.merchant?.is_active ??
+            true;
+
+          if (isActive === false) {
+            console.warn(`Access denied: Account is inactive for role: ${normalizedRole}`);
+            throw new Error("ACCOUNT_INACTIVE");
           }
 
-          const subscriptionType = data?.merchant?.merchant_type || "temporary";
-
+          // 5. Return success object
           return {
-            id: data.user.id,
-            email: data.user.email,
-            name: data.user.name,
-            avatar: data.user.avatar,
-            access_token: data.access_token,
-            role: data.user.role?.toLowerCase?.() || data.user.role,
-            subscriptionType,
-            merchant_id: data.merchant?.id || null,
-            admin_id: data.admin?.id || null,
+            id: userObj?.id || "unknown",
+            email: userObj?.email || "unknown",
+            name: userObj?.name || userObj?.business_name || "User",
+            access_token: token,
+            role: normalizedRole,
+            subscriptionType: data?.merchant?.merchant_type || "temporary",
+            merchant_id: data?.merchant?.id || userObj?.merchant_id || null,
+            merchant_active: isActive,
           };
         } catch (error) {
-          console.error(
-            "Login failed:",
-            error?.response?.data || error.message
-          );
+          const apiError = error?.response?.data?.message || error?.response?.data;
+
+          if (error.message === "ACCOUNT_INACTIVE" ||
+            (typeof apiError === "string" && apiError.toUpperCase().includes("INACTIVE"))) {
+            throw new Error("Your account is inactive. Please contact your agent.");
+          }
+
+          console.error("Login authorize failed:", error.message);
           return null;
         }
       },
@@ -81,6 +97,7 @@ export const authOptions = {
         token.role = user.role ?? token.role;
         token.merchantId =
           user.merchant_id ?? user.merchantId ?? token.merchantId;
+        token.merchantActive = user.merchant_active ?? token.merchantActive;
         token.adminId = user.admin_id ?? user.adminId ?? token.adminId;
         token.subscriptionType =
           user.subscriptionType ||
@@ -98,6 +115,7 @@ export const authOptions = {
 
       if (token?.id) session.user.id = token.id;
       if (token?.email) session.user.email = token.email;
+      session.user.merchantActive = token.merchantActive ?? true;
       if (token?.role) session.user.role = token.role;
       if (token?.subscriptionType)
         session.user.subscriptionType = token.subscriptionType;

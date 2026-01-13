@@ -143,35 +143,31 @@ export const LuckyDraw = ({
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[80vh] w-full max-w-6xl mx-auto p-4 md:p-8 animate-in fade-in duration-700">
-      <Card className="w-full border-none shadow-3xl overflow-hidden rounded-[2.5rem] bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl border-l-[6px] border-l-primary relative">
-        <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
-          <Trophy className="w-32 h-32 text-primary" />
-        </div>
-
-        <CardHeader className="pb-8 pt-12 px-8 md:px-12 border-b border-zinc-100/50 dark:border-zinc-800/50">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="flex items-center gap-6">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-inner rotate-3">
-                <Trophy className="h-8 w-8" />
+      <Card className="w-full">
+        <CardHeader>
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/5 border border-primary/10 text-primary">
+                <Trophy className="h-6 w-6" />
               </div>
               <div>
-                <CardTitle className="text-3xl font-black italic tracking-tighter text-zinc-900 dark:text-zinc-100 uppercase">
+                <CardTitle className="text-2xl font-bold">
                   {merchantConfig?.name && merchantConfig.name !== "Loading..."
                     ? merchantConfig.name
                     : "Lucky Draw"}
                 </CardTitle>
-                <CardDescription className="text-sm font-bold text-zinc-400 uppercase tracking-widest">
+                <CardDescription>
                   A gift for your valuable feedback.
                 </CardDescription>
               </div>
             </div>
 
             <Button
-              variant="ghost"
+              variant="outline"
               size="sm"
               onClick={prevStep}
               disabled={isSpinning || hasSpun}
-              className="h-10 rounded-full bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-400 font-black text-[10px] uppercase tracking-[0.2em] px-6 gap-2 transition-all active:scale-95 disabled:opacity-0 border border-zinc-200/50 dark:border-zinc-700/50"
+              className="h-9 rounded-md gap-2"
             >
               <ArrowLeft className="w-4 h-4" />
               Back
@@ -286,8 +282,8 @@ export const LuckyDraw = ({
 
                 <div className="flex flex-col items-center gap-2 mt-4">
                   {result?.whatsapp_status === "failed" ||
-                  result?.whatsapp_error ||
-                  result?.error === "whatsapp_credit_low" ? (
+                    result?.whatsapp_error ||
+                    result?.error === "whatsapp_credit_low" ? (
                     <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 border border-red-500/20">
                       <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></div>
                       <span className="text-[10px] font-black text-red-600 dark:text-red-400 uppercase tracking-widest leading-none">
@@ -317,8 +313,8 @@ export const LuckyDraw = ({
 
                 <div className="bg-zinc-50 dark:bg-zinc-800/20 p-5 rounded-3xl border border-dashed border-zinc-200 dark:border-zinc-700/50 max-w-sm mt-4">
                   {result?.whatsapp_status === "failed" ||
-                  result?.whatsapp_error ||
-                  result?.error === "whatsapp_credit_low" ? (
+                    result?.whatsapp_error ||
+                    result?.error === "whatsapp_credit_low" ? (
                     <p className="text-[11px] font-bold text-red-500 dark:text-red-400 leading-relaxed uppercase tracking-wide italic px-4">
                       "We couldn't send the reward to your WhatsApp due to a
                       technical error. <br />

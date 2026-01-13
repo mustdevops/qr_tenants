@@ -56,32 +56,28 @@ export const RedirectWait = ({ nextStep, prevStep, merchantConfig }) => {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[80vh] w-full max-w-6xl mx-auto p-4 md:p-8 animate-in fade-in duration-700">
-      <Card className="w-full border-none shadow-3xl overflow-hidden rounded-[2.5rem] bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl border-l-[6px] border-l-primary relative">
-        <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
-          <Loader2 className="w-32 h-32 text-primary animate-spin-slow" />
-        </div>
-
-        <CardHeader className="pb-8 pt-12 px-8 md:px-12 border-b border-zinc-100/50 dark:border-zinc-800/50">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="flex items-center gap-6">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-inner rotate-3">
-                <Zap className="h-8 w-8 animate-pulse" />
+      <Card className="w-full">
+        <CardHeader>
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/5 border border-primary/10 text-primary">
+                <Zap className="h-6 w-6 animate-pulse" />
               </div>
               <div>
-                <CardTitle className="text-3xl font-black italic tracking-tighter text-zinc-900 dark:text-zinc-100 uppercase">
+                <CardTitle className="text-2xl font-bold">
                   {statuses[statusIndex].label}
                 </CardTitle>
-                <CardDescription className="text-sm font-bold text-zinc-400 uppercase tracking-widest">
+                <CardDescription>
                   {statuses[statusIndex].sub}
                 </CardDescription>
               </div>
             </div>
 
             <Button
-              variant="ghost"
+              variant="outline"
               size="sm"
               onClick={prevStep}
-              className="h-10 rounded-full bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-400 font-black text-[10px] uppercase tracking-[0.2em] px-6 gap-2 transition-all active:scale-95 border border-zinc-200/50 dark:border-zinc-700/50"
+              className="h-9 rounded-md gap-2"
             >
               <ArrowLeft className="w-4 h-4" />
               Back
@@ -89,7 +85,7 @@ export const RedirectWait = ({ nextStep, prevStep, merchantConfig }) => {
           </div>
         </CardHeader>
 
-        <CardContent className="py-16 px-8 md:px-20 flex flex-col items-center space-y-12">
+        <CardContent className="py-16 flex flex-col items-center gap-12">
           <div className="relative">
             <div className="w-32 h-32 rounded-full bg-primary/5 flex items-center justify-center relative">
               <div className="absolute inset-0 rounded-full border-4 border-primary/10 border-t-primary animate-spin"></div>

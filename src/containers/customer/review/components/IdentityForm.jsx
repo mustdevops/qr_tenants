@@ -67,39 +67,35 @@ export const IdentityForm = ({
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[80vh] w-full max-w-6xl mx-auto p-4 md:p-8 animate-in fade-in duration-700">
-      <Card className="w-full border-none shadow-3xl overflow-hidden rounded-[2.5rem] bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl border-l-[6px] border-l-primary relative">
-        <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
-          <User className="w-32 h-32 text-primary" />
-        </div>
-
-        <CardHeader className="pb-8 pt-12 px-8 md:px-12 border-b border-zinc-100/50 dark:border-zinc-800/50">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="flex items-center gap-6">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-inner rotate-3">
-                <User className="h-8 w-8" />
+      <Card className="w-full">
+        <CardHeader>
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/5 border border-primary/10 text-primary">
+                <User className="h-6 w-6" />
               </div>
               <div>
-                <CardTitle className="text-3xl font-black italic tracking-tighter text-zinc-900 dark:text-zinc-100 uppercase">
+                <CardTitle className="text-2xl font-bold">
                   {merchantConfig?.name && merchantConfig.name !== "Loading..."
                     ? merchantConfig.name
                     : "Welcome"}
                 </CardTitle>
-                <CardDescription className="text-sm font-bold text-zinc-400 uppercase tracking-widest">
+                <CardDescription>
                   Share your details to unlock exclusive rewards.
                 </CardDescription>
               </div>
             </div>
 
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800 text-[10px] font-bold uppercase tracking-wider text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700">
-              <MapPin className="w-3 h-3 text-primary" />
-              <span className="truncate max-w-[150px]">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-muted text-[11px] font-medium text-muted-foreground border border-border">
+              <MapPin className="w-3.5 h-3.5 text-primary" />
+              <span className="truncate max-w-[200px]">
                 {merchantConfig?.address || "Store Location"}
               </span>
             </div>
           </div>
         </CardHeader>
 
-        <CardContent className="py-12 px-8 md:px-20">
+        <CardContent>
           <form
             onSubmit={handleSubmit(onSubmit, onError)}
             className="space-y-8 w-full"

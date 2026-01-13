@@ -282,8 +282,7 @@ export const ReviewForm = ({
     } catch (error) {
       console.error("Platform Redirect Error:", error);
       const responseData = error.response?.data;
-      const status = error.response?.status;
-      const errorCode = responseData?.statusCode || status;
+
       const errorMsg =
         responseData?.message ||
         "An unexpected error occurred while processing your feedback.";
@@ -291,11 +290,7 @@ export const ReviewForm = ({
       // Force close the platform modal to show error
       setShowPlatformModal(false);
 
-      triggerError(
-        `Critical Configuration Error (${errorCode})`,
-        errorMsg,
-        responseData?.errors || responseData?.error || null
-      );
+      triggerError(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -311,34 +306,28 @@ export const ReviewForm = ({
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[80vh] w-full max-w-6xl mx-auto p-4 md:p-8 animate-in fade-in duration-700">
-      <Card className="w-full border-none shadow-3xl overflow-hidden rounded-[2.5rem] bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl border-l-[6px] border-l-primary relative">
-        <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
-          <Sparkles className="w-32 h-32 text-primary" />
-        </div>
-
-        <CardHeader className="pb-8 pt-12 px-8 md:px-12 border-b border-zinc-100/50 dark:border-zinc-800/50">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="flex items-center gap-6">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-inner rotate-3">
-                <Star className="h-8 w-8" />
+      <Card className="w-full">
+        <CardHeader>
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/5 border border-primary/10 text-primary">
+                <Star className="h-6 w-6" />
               </div>
               <div>
-                <CardTitle className="text-3xl font-black italic tracking-tighter text-zinc-900 dark:text-zinc-100 uppercase">
+                <CardTitle className="text-2xl font-bold">
                   {merchantConfig?.name && merchantConfig.name !== "Loading..."
                     ? merchantConfig.name
                     : "Feedback"}
                 </CardTitle>
-                <CardDescription className="text-sm font-bold text-zinc-400 uppercase tracking-widest">
-                  We value your honest opinion.
-                </CardDescription>
+                <CardDescription>We value your honest opinion.</CardDescription>
               </div>
             </div>
 
             <Button
-              variant="ghost"
+              variant="outline"
               size="sm"
               onClick={prevStep}
-              className="h-10 rounded-full bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-400 font-black text-[10px] uppercase tracking-[0.2em] px-6 gap-2 transition-all active:scale-95 border border-zinc-200/50 dark:border-zinc-700/50"
+              className="h-9 rounded-md gap-2"
             >
               <ArrowLeft className="w-4 h-4" />
               Edit Details
@@ -359,15 +348,15 @@ export const ReviewForm = ({
                   formValues.rating >= 4
                     ? "bg-emerald-500/10 text-emerald-600 border border-emerald-500/20"
                     : formValues.rating >= 3
-                      ? "bg-amber-500/10 text-amber-600 border border-amber-500/20"
-                      : "bg-red-500/10 text-red-600 border border-red-500/20"
+                    ? "bg-amber-500/10 text-amber-600 border border-amber-500/20"
+                    : "bg-red-500/10 text-red-600 border border-red-500/20"
                 )}
               >
                 {formValues.rating >= 4
                   ? "Excellent!"
                   : formValues.rating >= 3
-                    ? "Good"
-                    : "Could be better"}
+                  ? "Good"
+                  : "Could be better"}
               </div>
             </div>
 
@@ -407,7 +396,9 @@ export const ReviewForm = ({
                         : "border-zinc-200 dark:border-zinc-800 bg-white/50 dark:bg-zinc-900/50 text-zinc-500 hover:border-primary/50 hover:bg-zinc-50"
                     )}
                   >
-                    <span className="relative z-10">"{review.review_text}"</span>
+                    <span className="relative z-10">
+                      "{review.review_text}"
+                    </span>
                   </button>
                 ))}
               </div>

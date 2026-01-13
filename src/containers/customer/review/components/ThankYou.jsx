@@ -15,24 +15,20 @@ import {
 export const ThankYou = ({ resetFlow, merchantConfig, prevStep, reward, formValues }) => {
   return (
     <div className="flex flex-col items-center justify-center min-h-[80vh] w-full max-w-6xl mx-auto p-4 md:p-8 animate-in fade-in duration-700">
-      <Card className="w-full border-none shadow-3xl overflow-hidden rounded-[2.5rem] bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl border-l-[6px] border-l-primary relative">
-        <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
-          <Heart className="w-32 h-32 text-red-500 fill-red-500" />
-        </div>
-
-        <CardHeader className="pb-8 pt-12 px-8 md:px-12 border-b border-zinc-100/50 dark:border-zinc-800/50">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="flex items-center gap-6">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-red-500/10 text-red-500 shadow-inner rotate-3">
-                <Heart className="h-8 w-8 fill-red-500" />
+      <Card className="w-full">
+        <CardHeader>
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-red-50 border border-red-100 text-red-500">
+                <Heart className="h-6 w-6 fill-red-500" />
               </div>
               <div>
-                <CardTitle className="text-3xl font-black italic tracking-tighter text-zinc-900 dark:text-zinc-100 uppercase">
+                <CardTitle className="text-2xl font-bold">
                   {merchantConfig?.name && merchantConfig.name !== "Loading..."
                     ? merchantConfig.name
                     : "Thank You"}
                 </CardTitle>
-                <CardDescription className="text-sm font-bold text-zinc-400 uppercase tracking-widest">
+                <CardDescription>
                   We appreciate your feedback!
                 </CardDescription>
               </div>

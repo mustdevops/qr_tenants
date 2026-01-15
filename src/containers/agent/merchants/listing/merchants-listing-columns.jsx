@@ -16,7 +16,7 @@ import { MoreHorizontal, FileText, Edit } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { User, MapPin, Tag } from "lucide-react";
 
-export const getMerchantsColumns = (onDeleted) => [
+export const getMerchantsColumns = (onDeleted, showEdit = true) => [
     {
         accessorKey: "name",
         header: "Business & Account",
@@ -69,10 +69,19 @@ export const getMerchantsColumns = (onDeleted) => [
         header: "Status",
         cell: ({ row }) => (
             <div className="flex items-center h-full">
-                <MerchantStatusToggle
-                    initialStatus={row.original.status}
-                    merchantId={row.original.id}
-                />
+                {showEdit ? (
+                    <MerchantStatusToggle
+                        initialStatus={row.original.status}
+                        merchantId={row.original.id}
+                    />
+                ) : (
+                    <Badge
+                        variant={row.original.status === "active" ? "outline" : "secondary"}
+                        className="capitalize"
+                    >
+                        {row.original.status}
+                    </Badge>
+                )}
             </div>
         ),
     },
@@ -126,18 +135,24 @@ export const getMerchantsColumns = (onDeleted) => [
                                     <span className="font-medium">Details</span>
                                 </Link>
                             </DropdownMenuItem>
-                            <DropdownMenuItem asChild className="cursor-pointer">
-                                <Link href={`/agent/merchants/edit/${row.original.id}`}>
-                                    <Edit className="mr-2 h-4 w-4 text-slate-500" />
-                                    <span className="font-medium">Edit</span>
-                                </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DeleteMerchantAction
-                                merchantId={row.original.id}
-                                merchantName={row.original.name}
-                                onDeleted={onDeleted}
-                            />
+                            {showEdit && (
+                                <DropdownMenuItem asChild className="cursor-pointer">
+                                    <Link href={`/agent/merchants/edit/${row.original.id}`}>
+                                        <Edit className="mr-2 h-4 w-4 text-slate-500" />
+                                        <span className="font-medium">Edit</span>
+                                    </Link>
+                                </DropdownMenuItem>
+                            )}
+                            {showEdit && (
+                                <>
+                                    <DropdownMenuSeparator />
+                                    <DeleteMerchantAction
+                                        merchantId={row.original.id}
+                                        merchantName={row.original.name}
+                                        onDeleted={onDeleted}
+                                    />
+                                </>
+                            )}
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>
@@ -145,3 +160,4 @@ export const getMerchantsColumns = (onDeleted) => [
         },
     },
 ];
+

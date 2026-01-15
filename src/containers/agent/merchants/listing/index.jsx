@@ -14,7 +14,10 @@ import { useRouter } from "next/navigation";
 import { useCallback } from "react";
 import useDebounce from "@/hooks/useDebounceRef";
 
-export default function AgentMerchantsListingContainer() {
+export default function AgentMerchantsListingContainer({
+  showCreate = true,
+  showEdit = true,
+}) {
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(10);
@@ -76,7 +79,7 @@ export default function AgentMerchantsListingContainer() {
     fetchMerchants();
   };
 
-  const columns = getMerchantsColumns(handleDeleted);
+  const columns = getMerchantsColumns(handleDeleted, showEdit);
 
   return (
     <div className="space-y-6">
@@ -87,10 +90,6 @@ export default function AgentMerchantsListingContainer() {
           </h1>
           <p className="text-muted-foreground">{tMerchants("description")}</p>
         </div>
-        <Button onClick={() => router.push("/agent/merchants/create")}>
-          <Plus className="mr-2 h-4 w-4" />
-          {tMerchants("addmerchant")}
-        </Button>
       </div>
 
       <Card>
@@ -101,6 +100,14 @@ export default function AgentMerchantsListingContainer() {
           <TableToolbar
             placeholder={tMerchants("searchmerchants")}
             onSearchChange={setSearch}
+            rightSlot={
+              showCreate && (
+                <Button onClick={() => router.push("/agent/merchants/create")}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  {tMerchants("addmerchant")}
+                </Button>
+              )
+            }
           />
           <DataTable
             data={data}
@@ -117,3 +124,4 @@ export default function AgentMerchantsListingContainer() {
     </div>
   );
 }
+

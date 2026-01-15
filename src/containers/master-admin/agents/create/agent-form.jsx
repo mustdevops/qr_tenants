@@ -22,23 +22,31 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2, Store, User, CreditCard, Eye, EyeOff } from "lucide-react";
+import {
+  Loader2,
+  User,
+  Eye,
+  EyeOff,
+  Phone,
+  MapPin,
+  ShieldCheck,
+} from "lucide-react";
 import { toast } from "sonner";
-import { createMerchant, updateMerchant } from "@/lib/services/helper";
 import AddressAutocomplete from "@/components/address-autocomplete";
 import { cn } from "@/lib/utils";
+import axiosInstance from "@/lib/axios";
 
 /**
- * MerchantForm - Create or Edit Merchant
+ * AgentForm - Create or Edit Agent
  * @param {Object} props
  * @param {Object} props.initialData - Data to pre-fill for edit mode (optional)
  * @param {boolean} props.isEdit - Whether this is edit mode (default: false)
- * @param {string|number} props.merchantId - The ID of the merchant being edited (required for edit)
+ * @param {string|number} props.agentId - The ID of the agent being edited (required for edit)
  */
-export function MerchantForm({
+export function AgentForm({
   initialData = null,
   isEdit = false,
-  merchantId = null,
+  agentId = null,
 }) {
   const router = useRouter();
   const { data: session } = useSession();
@@ -48,20 +56,65 @@ export function MerchantForm({
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    phone: "",
     password: "",
-    role: "merchant",
-    business_name: "",
-    business_type: "",
-    merchant_type: "annual",
     address: "",
     city: "",
     country: "",
-    map_link: "",
     latitude: "",
     longitude: "",
-    tax_id: "",
     is_active: true,
   });
+
+  // Fetch data if in edit mode and no initialData provided
+  useEffect(() => {
+    const fetchAgent = async () => {
+      if (isEdit && !initialData && agentId) {
+        setLoading(true);
+        try {
+          const response = await axiosInstance.get(`/admins/${agentId}`);
+          // Extract the agent data (handle API response wrapping)
+          const data = response.data;
+          const agent = data?.data || data;
+
+          if (!agent) {
+            console.error("No agent data found in response:", data);
+            toast.error("Failed to load agent details");
+            return;
+          }
+
+          console.debug("Fetched agent data for edit:", agent);
+
+          const user = agent.user || {};
+
+          setFormData({
+            name: user.name || agent.name || "",
+            email: user.email || agent.email || "",
+            phone: user.phone || agent.phone || agent.phone_number || "",
+            password: "",
+            address: agent.address || "",
+            city: agent.city || "",
+            country: agent.country || "",
+            latitude: agent.latitude || agent.lat || "",
+            longitude: agent.longitude || agent.lng || "",
+            is_active:
+              agent.is_active ??
+              user.is_active ??
+              agent.isActive ??
+              user.isActive ??
+              true,
+          });
+        } catch (error) {
+          console.error("Failed to fetch agent details:", error);
+          toast.error("Failed to load agent details");
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchAgent();
+  }, [isEdit, initialData, agentId]);
 
   // Populate form when initialData is provided (edit mode)
   useEffect(() => {
@@ -74,21 +127,13 @@ export function MerchantForm({
       setFormData({
         name: userData.name || initialData.name || "",
         email: userData.email || initialData.email || "",
+        phone: userData.phone || initialData.phone || "",
         password: "", // Don't pre-fill password for security
-        role: initialData.role || "merchant",
-        business_name:
-          initialData.business_name || initialData.businessName || "",
-        business_type:
-          initialData.business_type || initialData.businessType || "",
-        merchant_type:
-          initialData.merchant_type || initialData.merchantType || "annual",
         address: initialData.address || "",
         city: initialData.city || "",
         country: initialData.country || "",
-        map_link: initialData.map_link || initialData.mapLink || "",
         latitude: initialData.latitude || "",
         longitude: initialData.longitude || "",
-        tax_id: initialData.tax_id || initialData.taxId || "",
         is_active:
           userData.is_active ??
           initialData.is_active ??
@@ -108,21 +153,13 @@ export function MerchantForm({
 
     try {
       const payload = {
-        admin_id: session?.user?.adminId,
         name: formData.name,
         email: formData.email,
-        role: "merchant",
-        business_name: formData.business_name,
-        business_type: formData.business_type,
-        merchant_type: formData.merchant_type,
+        phone: formData.phone,
         address: formData.address,
-        city: formData.city,
-        country: formData.country,
-        map_link: formData.map_link,
-        latitude: parseFloat(formData.latitude) || null,
-        longitude: parseFloat(formData.longitude) || null,
-        tax_id: formData.tax_id,
         is_active: formData.is_active,
+        country: formData.country,
+        city: formData.city,
       };
 
       // Only include password if it's provided (for create or password change)
@@ -130,25 +167,22 @@ export function MerchantForm({
         payload.password = formData.password;
       }
 
-      if (isEdit && merchantId) {
-        console.debug("Updating merchant payload:", payload);
-        await updateMerchant(merchantId, payload);
-        toast.success("Merchant updated successfully.");
+      if (isEdit && agentId) {
+        console.debug("Updating agent payload:", payload);
+        await axiosInstance.patch(`/admins/${agentId}`, payload);
+        toast.success("Agent profile updated successfully.");
       } else {
-        console.debug("Creating merchant payload:", payload);
-        await createMerchant(payload);
-        toast.success("Merchant account created successfully.");
+        console.debug("Creating agent payload:", payload);
+        await axiosInstance.post(`/admins`, payload);
+        toast.success("Agent account created successfully.");
       }
 
-      router.push("/agent/merchants");
+      router.push("/master-admin/agents");
     } catch (error) {
-      console.error(
-        `Error ${isEdit ? "updating" : "creating"} merchant:`,
-        error
-      );
+      console.error(`Error ${isEdit ? "updating" : "creating"} agent:`, error);
       toast.error(
         error?.response?.data?.message ||
-          `Failed to ${isEdit ? "update" : "create"} merchant`
+          `Failed to ${isEdit ? "update" : "create"} agent. Please try again.`
       );
     } finally {
       setLoading(false);
@@ -167,41 +201,65 @@ export function MerchantForm({
             <div className="p-2 bg-primary/10 rounded-full text-primary">
               <User className="h-4 w-4" />
             </div>
-            <CardTitle>Account Credentials</CardTitle>
+            <CardTitle>Agent Details</CardTitle>
           </div>
           <CardDescription>
             {isEdit
-              ? "Update merchant administrator details."
-              : "Login details for the merchant administrator."}
+              ? "Update agent personal and login information."
+              : "Enter the personal details for the new agent."}
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-6 md:grid-cols-2">
+          {/* Name */}
           <div className="space-y-2">
-            <Label htmlFor="name">Merchant Name</Label>
+            <Label htmlFor="name">
+              Full Name <span className="text-red-500">*</span>
+            </Label>
             <Input
               id="name"
-              placeholder="John Doe"
+              placeholder="e.g. John Doe"
               required
               value={formData.name}
               onChange={(e) => handleChange("name", e.target.value)}
             />
           </div>
+
+          {/* Email */}
           <div className="space-y-2">
-            <Label htmlFor="email">Email Address</Label>
+            <Label htmlFor="email">
+              Email Address <span className="text-red-500">*</span>
+            </Label>
             <Input
               id="email"
               type="email"
-              placeholder="merchant@business.com"
+              placeholder="agent@example.com"
               required
               value={formData.email}
               onChange={(e) => handleChange("email", e.target.value)}
             />
           </div>
+
+          {/* Phone */}
           <div className="space-y-2">
+            <Label htmlFor="phone">Phone Number</Label>
+            <div className="relative">
+              <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="phone"
+                placeholder="+1 234 567 890"
+                className="pl-9"
+                value={formData.phone}
+                onChange={(e) => handleChange("phone", e.target.value)}
+              />
+            </div>
+          </div>
+          {/* Password */}
+          <div className="space-y-2 ">
             <Label htmlFor="password">
               {isEdit
                 ? "New Password (leave blank to keep current)"
-                : "Initial Password"}
+                : "Initial Password"}{" "}
+              <span className="text-red-500">*</span>
             </Label>
             <div className="relative">
               <Input
@@ -210,7 +268,7 @@ export function MerchantForm({
                 required={!isEdit}
                 value={formData.password}
                 onChange={(e) => handleChange("password", e.target.value)}
-                placeholder={isEdit ? "••••••••" : ""}
+                placeholder={isEdit ? "••••••••" : "Enter a secure password"}
                 className="pr-10"
               />
               <button
@@ -226,67 +284,11 @@ export function MerchantForm({
                 )}
               </button>
             </div>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="role">Role</Label>
-            <Input id="role" disabled value={formData.role} />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Business Info */}
-      <Card className="shadow-md">
-        <CardHeader>
-          <div className="flex items-center gap-2 mb-1">
-            <div className="p-2 bg-indigo-500/10 rounded-full text-indigo-600">
-              <Store className="h-4 w-4" />
-            </div>
-            <CardTitle>Business Profile</CardTitle>
-          </div>
-          <CardDescription>
-            Primary business details displayed to customers.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-6 md:grid-cols-2">
-          <div className="space-y-2">
-            <Label htmlFor="business_name">Business Name</Label>
-            <Input
-              id="business_name"
-              placeholder="e.g. Acme Café"
-              required
-              value={formData.business_name}
-              onChange={(e) => handleChange("business_name", e.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>Business Type</Label>
-            <Select
-              value={formData.business_type}
-              onValueChange={(v) => handleChange("business_type", v)}
-              required
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select business type..." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Food & Beverage">Food & Beverage</SelectItem>
-                <SelectItem value="Retail">Retail</SelectItem>
-                <SelectItem value="Services">Services</SelectItem>
-                <SelectItem value="Health">Health</SelectItem>
-                <SelectItem value="Education">Education</SelectItem>
-                <SelectItem value="Technology">Technology</SelectItem>
-                <SelectItem value="Hospitality">Hospitality</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="tax_id">Tax ID</Label>
-            <Input
-              id="tax_id"
-              placeholder="e.g. TX123456"
-              value={formData.tax_id}
-              onChange={(e) => handleChange("tax_id", e.target.value)}
-            />
+            {!isEdit && (
+              <p className="text-xs text-muted-foreground">
+                Min. 8 characters, alphanumeric.
+              </p>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -296,13 +298,11 @@ export function MerchantForm({
         <CardHeader>
           <div className="flex items-center gap-2 mb-1">
             <div className="p-2 bg-orange-500/10 rounded-full text-orange-600">
-              <Store className="h-4 w-4" />
+              <MapPin className="h-4 w-4" />
             </div>
             <CardTitle>Location Details</CardTitle>
           </div>
-          <CardDescription>
-            Search for the business address to auto-fill details.
-          </CardDescription>
+          <CardDescription>Address information for the agent.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-6 md:grid-cols-2">
           <div className="space-y-2 md:col-span-2">
@@ -310,7 +310,7 @@ export function MerchantForm({
             <AddressAutocomplete
               label="Address"
               name="address"
-              placeholder="123 Main St, City, Country"
+              placeholder="123 Agent St, City, Country"
               value={formData.address}
               onChange={(locationData) => {
                 setFormData((prev) => ({
@@ -318,11 +318,10 @@ export function MerchantForm({
                   address: locationData.address,
                   latitude: locationData.latitude,
                   longitude: locationData.longitude,
-                  map_link: locationData.mapUrl,
                   city: locationData.city || prev.city,
                   country: locationData.country || prev.country,
                 }));
-                toast.success("Location updated");
+                toast.success("Address selected");
               }}
             />
           </div>
@@ -332,7 +331,6 @@ export function MerchantForm({
             <Input
               id="city"
               placeholder="City"
-              required
               value={formData.city}
               onChange={(e) => handleChange("city", e.target.value)}
             />
@@ -342,53 +340,36 @@ export function MerchantForm({
             <Input
               id="country"
               placeholder="Country"
-              required
               value={formData.country}
               onChange={(e) => handleChange("country", e.target.value)}
             />
           </div>
 
-          {/* Hidden Lat/Lng for form submission */}
+          {/* Hidden Lat/Lng */}
           <input type="hidden" name="latitude" value={formData.latitude} />
           <input type="hidden" name="longitude" value={formData.longitude} />
         </CardContent>
       </Card>
 
-      {/* Merchant Type */}
+      {/* Account Settings */}
       <Card className="shadow-md">
         <CardHeader>
           <div className="flex items-center gap-2 mb-1">
             <div className="p-2 bg-emerald-500/10 rounded-full text-emerald-600">
-              <CreditCard className="h-4 w-4" />
+              <ShieldCheck className="h-4 w-4" />
             </div>
-            <CardTitle>Merchant Type</CardTitle>
+            <CardTitle>Account Status</CardTitle>
           </div>
-          <CardDescription>Select the merchant type.</CardDescription>
+          <CardDescription>
+            Control the agent's access to the system.
+          </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="grid md:grid-cols-1 gap-6">
-            <div className="space-y-2">
-              <Label>Merchant Type</Label>
-              <Select
-                value={formData.merchant_type}
-                onValueChange={(v) => handleChange("merchant_type", v)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="annual">Annual</SelectItem>
-                  <SelectItem value="temporary">Temporary</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
+        <CardContent>
           <div className="flex items-center justify-between p-4 rounded-lg border bg-zinc-50/50 dark:bg-zinc-800/30">
             <div className="space-y-0.5">
-              <Label className="text-base">Account Status</Label>
+              <Label className="text-base">Active Status</Label>
               <CardDescription>
-                Enable or disable this merchant's access to the platform.
+                When disabled, the agent cannot log in or manage merchants.
               </CardDescription>
             </div>
             <div className="flex items-center gap-3">
@@ -420,8 +401,8 @@ export function MerchantForm({
                 ? "Updating..."
                 : "Creating..."
               : isEdit
-              ? "Update Merchant"
-              : "Create Merchant"}
+              ? "Update Agent"
+              : "Create Agent"}
           </Button>
         </CardFooter>
       </Card>

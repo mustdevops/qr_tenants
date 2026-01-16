@@ -34,8 +34,8 @@ export default function RewardStrategySettings({
                 {/* Lucky Draw Option */}
                 <div
                     className={`relative p-4 rounded-xl border-2 transition-all cursor-pointer ${config.luckyDrawEnabled
-                            ? "border-primary bg-primary/5"
-                            : "border-muted hover:border-primary/30"
+                        ? "border-primary bg-primary/5"
+                        : "border-muted hover:border-primary/30"
                         }`}
                     onClick={() => setConfig({ ...config, luckyDrawEnabled: true })}
                 >
@@ -43,8 +43,8 @@ export default function RewardStrategySettings({
                         <div className="flex items-center gap-3">
                             <div
                                 className={`p-2 rounded-lg ${config.luckyDrawEnabled
-                                        ? "bg-primary text-primary-foreground"
-                                        : "bg-muted text-muted-foreground"
+                                    ? "bg-primary text-primary-foreground"
+                                    : "bg-muted text-muted-foreground"
                                     }`}
                             >
                                 <Sparkles className="h-5 w-5" />
@@ -82,8 +82,8 @@ export default function RewardStrategySettings({
                 {/* Direct Coupon Option */}
                 <div
                     className={`relative p-4 rounded-xl border-2 transition-all cursor-pointer ${!config.luckyDrawEnabled
-                            ? "border-primary bg-primary/5"
-                            : "border-muted hover:border-primary/30"
+                        ? "border-primary bg-primary/5"
+                        : "border-muted hover:border-primary/30"
                         }`}
                     onClick={() => setConfig({ ...config, luckyDrawEnabled: false })}
                 >
@@ -91,8 +91,8 @@ export default function RewardStrategySettings({
                         <div className="flex items-center gap-3">
                             <div
                                 className={`p-2 rounded-lg ${!config.luckyDrawEnabled
-                                        ? "bg-primary text-primary-foreground"
-                                        : "bg-muted text-muted-foreground"
+                                    ? "bg-primary text-primary-foreground"
+                                    : "bg-muted text-muted-foreground"
                                     }`}
                             >
                                 <Ticket className="h-5 w-5" />

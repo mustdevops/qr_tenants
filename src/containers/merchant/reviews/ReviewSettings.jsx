@@ -157,12 +157,12 @@ export default function ReviewSettings() {
       const payload = {
         reviews: config.enablePresetReviews
           ? config.presets.map((text, index) => ({
-            id: index + 1,
-            merchant_id: merchantId,
-            reviewText: text.trim(),
-            isActive: true,
-            displayOrder: index + 1,
-          }))
+              id: index + 1,
+              merchant_id: merchantId,
+              reviewText: text.trim(),
+              isActive: true,
+              displayOrder: index + 1,
+            }))
           : [],
       };
 
@@ -308,10 +308,7 @@ export default function ReviewSettings() {
         </div>
       </div>
 
-      <StickySaveBar
-        loading={loadingSettings}
-        onSave={handleSaveAllSettings}
-      />
+      <StickySaveBar loading={loadingSettings} onSave={handleSaveAllSettings} />
     </div>
   );
 }

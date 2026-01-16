@@ -41,8 +41,8 @@ export default function BirthdayRewardsSettings({
             <CardContent className="p-6">
                 <div
                     className={`space-y-4 transition-all duration-300 ${!config.birthdayMessageEnabled
-                            ? "opacity-50 pointer-events-none grayscale-[0.5]"
-                            : ""
+                        ? "opacity-50 pointer-events-none grayscale-[0.5]"
+                        : ""
                         }`}
                 >
                     <div className="grid grid-cols-2 gap-3">

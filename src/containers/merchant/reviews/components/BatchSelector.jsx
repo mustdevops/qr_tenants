@@ -22,8 +22,8 @@ export default function BatchSelector({
                 <div className="flex flex-col items-start overflow-hidden">
                     <span
                         className={`text-sm truncate w-full ${selectedId
-                                ? "font-medium text-foreground"
-                                : "text-muted-foreground"
+                            ? "font-medium text-foreground"
+                            : "text-muted-foreground"
                             }`}
                     >
                         {selectedId

@@ -148,7 +148,7 @@ export function MerchantForm({
       );
       toast.error(
         error?.response?.data?.message ||
-          `Failed to ${isEdit ? "update" : "create"} merchant`
+        `Failed to ${isEdit ? "update" : "create"} merchant`
       );
     } finally {
       setLoading(false);
@@ -420,8 +420,8 @@ export function MerchantForm({
                 ? "Updating..."
                 : "Creating..."
               : isEdit
-              ? "Update Merchant"
-              : "Create Merchant"}
+                ? "Update Merchant"
+                : "Create Merchant"}
           </Button>
         </CardFooter>
       </Card>

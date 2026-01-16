@@ -12,6 +12,13 @@ import {
     DialogDescription,
     DialogFooter,
 } from "@/components/ui/dialog";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Megaphone, Trash2, Plus, Check, Loader2, Image as ImageIcon, Video as VideoIcon, Play } from "lucide-react";
 import Cropper from "react-easy-crop";
@@ -22,7 +29,7 @@ import { getCroppedImg, getImageUrl } from "../utils/imageUtils";
 export default function PaidAdsSettings({ config, setConfig, merchantId }) {
     const [uploading, setUploading] = useState(false);
     const [activeTab, setActiveTab] = useState(config.paid_ad_video_status ? "video" : "image");
-
+    console.log("mcid", merchantId);
     // Cropper State
     const [imageSrc, setImageSrc] = useState(null);
     const [crop, setCrop] = useState({ x: 0, y: 0 });
@@ -34,6 +41,35 @@ export default function PaidAdsSettings({ config, setConfig, merchantId }) {
     const onCropComplete = useCallback((croppedArea, croppedAreaPixels) => {
         setCroppedAreaPixels(croppedAreaPixels);
     }, []);
+
+    const handleTogglePaidAds = async (checked) => {
+        if (!merchantId) return;
+
+        const newPlacement = config.placement || "top";
+
+        // Optimistic update
+        setConfig({
+            ...config,
+            paid_ads: checked,
+            // placement: newPlacement
+        });
+
+        try {
+            await axiosInstance.patch(`/merchant-settings/merchant/${merchantId}`, {
+                paid_ads: checked,
+                paid_ad_placement: newPlacement
+            });
+            toast.success("Settings updated successfully");
+        } catch (error) {
+            console.error(error);
+            toast.error("Insufficient paid ad credits");
+            // Revert
+            setConfig({
+                ...config,
+                paid_ads: !checked
+            });
+        }
+    };
 
     const handleFileChange = async (e) => {
         if (e.target.files && e.target.files.length > 0) {
@@ -202,12 +238,29 @@ export default function PaidAdsSettings({ config, setConfig, merchantId }) {
                     </div>
                     <Switch
                         checked={config.paid_ads}
-                        onCheckedChange={(c) => setConfig({ ...config, paid_ads: c })}
+                        onCheckedChange={handleTogglePaidAds}
                     />
                 </div>
 
                 {config.paid_ads && (
                     <div className="animate-in fade-in slide-in-from-top-4 duration-300 space-y-4">
+                        <div className="space-y-2">
+                            <Label>Ad Placement</Label>
+                            <Select
+                                value={config.placement || "top"}
+                                onValueChange={(val) => setConfig({ ...config, placement: val })}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select placement" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="top">Top</SelectItem>
+                                    <SelectItem value="left">Left</SelectItem>
+                                    <SelectItem value="right">Right</SelectItem>
+                                    <SelectItem value="bottom">Bottom</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
                         <Tabs value={activeTab} onValueChange={(val) => {
                             setActiveTab(val);
                             setConfig({ ...config, paid_ad_video_status: val === 'video' });

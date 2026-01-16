@@ -35,6 +35,7 @@ export default function ReviewSettings() {
     paid_ad_video_enabled: false,
     paid_ad_video: "",
     paid_ad_videos: [],
+    placement: "",
     birthdayMessageEnabled: false,
     daysBeforeBirthday: 3,
     daysAfterBirthday: 0,
@@ -124,6 +125,7 @@ export default function ReviewSettings() {
         paid_ad_video_status: data.paid_ad_type === "video", // Infer status from type if available, otherwise default to false
         paid_ad_video: data.paid_ad_video || "",
         paid_ad_videos: data.paid_ad_video ? [data.paid_ad_video] : [],
+        placement: data.paid_ad_placement || "top",
         birthdayMessageEnabled: data.birthday_message_enabled ?? false,
         daysBeforeBirthday: data.days_before_birthday ?? 3,
         daysAfterBirthday: data.days_after_birthday ?? 0,
@@ -217,9 +219,10 @@ export default function ReviewSettings() {
           : null,
         xiaohongshu_url: config.enableRed ? config.redReviewLink : null,
         paid_ads: config.paid_ads,
-        //  paid_ad_image: config.paid_ad_image,
-        //  paid_ad_video: config.paid_ad_video,
-        //  paid_ad_type: config.paid_ad_video_status ? "video" : "image",
+        paid_ad_image: config.paid_ad_image,
+        paid_ad_video: config.paid_ad_video,
+        paid_ad_type: config.paid_ad_video_status ? "video" : "image",
+        paid_ad_placement: config.placement,
         // Reward settings - Lucky Draw or Coupon Batch
         luckydraw_enabled: config.luckyDrawEnabled,
         whatsapp_enabled_for_batch_id: config.luckyDrawEnabled

@@ -37,7 +37,7 @@ export default function RewardStrategySettings({
                         ? "border-primary bg-primary/5"
                         : "border-muted hover:border-primary/30"
                         }`}
-                    onClick={() => setConfig({ ...config, luckyDrawEnabled: true })}
+                    onClick={() => setConfig(prev => ({ ...prev, luckyDrawEnabled: true }))}
                 >
                     <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3">
@@ -85,7 +85,7 @@ export default function RewardStrategySettings({
                         ? "border-primary bg-primary/5"
                         : "border-muted hover:border-primary/30"
                         }`}
-                    onClick={() => setConfig({ ...config, luckyDrawEnabled: false })}
+                    onClick={() => setConfig(prev => ({ ...prev, luckyDrawEnabled: false }))}
                 >
                     <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3">
@@ -115,7 +115,10 @@ export default function RewardStrategySettings({
                     </div>
 
                     {!config.luckyDrawEnabled && (
-                        <div className="mt-4 animate-in fade-in slide-in-from-top-2">
+                        <div
+                            className="mt-4 animate-in fade-in slide-in-from-top-2"
+                            onClick={(e) => e.stopPropagation()}
+                        >
                             <Label className="text-xs font-medium mb-1.5 block">
                                 Select Coupon Batch <span className="text-red-500">*</span>
                             </Label>
@@ -124,7 +127,7 @@ export default function RewardStrategySettings({
                                 batches={couponBatches}
                                 isOpen={batchDropdownOpen}
                                 setIsOpen={setBatchDropdownOpen}
-                                onSelect={(id) => setConfig({ ...config, selectedBatchId: id })}
+                                onSelect={(id) => setConfig(prev => ({ ...prev, selectedBatchId: id }))}
                                 loading={loadingBatches}
                                 placeholder="Choose regular reward..."
                             />

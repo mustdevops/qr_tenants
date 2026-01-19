@@ -219,9 +219,9 @@ export default function ReviewSettings() {
           : null,
         xiaohongshu_url: config.enableRed ? config.redReviewLink : null,
         paid_ads: config.paid_ads,
-        paid_ad_image: config.paid_ad_image,
-        paid_ad_video: config.paid_ad_video,
-        paid_ad_type: config.paid_ad_video_status ? "video" : "image",
+        //  paid_ad_image: config.paid_ad_image,
+        //  paid_ad_video: config.paid_ad_video,
+        //  paid_ad_type: config.paid_ad_video_status ? "video" : "image",
         paid_ad_placement: config.placement,
         // Reward settings - Lucky Draw or Coupon Batch
         luckydraw_enabled: config.luckyDrawEnabled,

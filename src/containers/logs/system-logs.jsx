@@ -16,33 +16,36 @@ import { cn } from "@/lib/utils";
 
 const LOG_TYPES = {
     'master-admin': [
-        { label: 'All System Logs', value: 'all' },
-        { label: 'Auth Logs', value: 'auth', category: 'auth' },
-        { label: 'Agent Logs', value: 'agent', category: 'admin' },
-        { label: 'Merchant Logs', value: 'merchant', category: 'merchant' },
+        { label: 'All Platform Activity', value: 'all' },
+        { label: 'Authentication Events', value: 'auth', category: 'auth' },
+        { label: 'Agent Activities', value: 'agent', category: 'agent' },
+        { label: 'Merchant Activities', value: 'merchant', category: 'merchant' },
         { label: 'Critical Errors', value: 'critical', level: 'critical' },
-        { label: 'Coupon Logs', value: 'coupon', category: 'coupon' },
+        { label: 'Coupon Operations', value: 'coupon', category: 'coupon' },
         { label: 'WhatsApp Logs', value: 'whatsapp', category: 'whatsapp' },
-        { label: 'Wallet Logs', value: 'wallet', category: 'wallet' },
+        { label: 'Wallet & Transactions', value: 'wallet', category: 'wallet' },
         { label: 'Campaign Logs', value: 'campaign', category: 'campaign' },
-        { label: 'Customer Logs', value: 'customer', category: 'customer' },
+        { label: 'Customer Actions', value: 'customer', category: 'customer' },
     ],
     'agent': [
-        { label: 'Merchant Activity', value: 'merchant', category: 'merchant' },
-        { label: 'Earning Logs', value: 'wallet', category: 'wallet' },
-        { label: 'Auth Logs', value: 'auth', category: 'auth' },
+        { label: 'My Merchants Activity', value: 'all' },
+        { label: 'Merchant Scoped Logs', value: 'merchant', category: 'merchant' },
+        { label: 'Coupon Logs', value: 'coupon', category: 'coupon' },
+        { label: 'Campaign Logs', value: 'campaign', category: 'campaign' },
+        { label: 'Wallet & Earnings', value: 'wallet', category: 'wallet' },
+        { label: 'Customer Logs', value: 'customer', category: 'customer' },
     ],
     'merchant': [
-        { label: 'All Store Activity', value: 'all' },
-        { label: 'Coupon Logs', value: 'coupon', category: 'coupon' },
-        { label: 'WhatsApp Logs', value: 'whatsapp', category: 'whatsapp' },
-        { label: 'Wallet Logs', value: 'wallet', category: 'wallet' },
+        { label: 'Store Activity', value: 'all' },
+        { label: 'Coupon Usage', value: 'coupon', category: 'coupon' },
         { label: 'Campaign Logs', value: 'campaign', category: 'campaign' },
-        { label: 'Customer Logs', value: 'customer', category: 'customer' },
+        { label: 'Wallet Transactions', value: 'wallet', category: 'wallet' },
+        { label: 'Customer Actions', value: 'customer', category: 'customer' },
+        { label: 'Security & Auth', value: 'auth', category: 'auth' },
     ]
 };
 
-export default function SystemLogsContainer({ scope = "master-admin", merchantId }) {
+export default function SystemLogsContainer({ scope = "master-admin", merchantId, agentId }) {
     const [logs, setLogs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [total, setTotal] = useState(0);
@@ -62,10 +65,11 @@ export default function SystemLogsContainer({ scope = "master-admin", merchantId
                 pageSize: pageSize,
             };
 
-            // 1. Handle Merchant Specific Filter
+            // 1. Handle Ownership-based Filtering
             if (scope === 'merchant' && merchantId) {
-                params.entityType = 'merchant';
-                params.entityId = merchantId;
+                params.merchantId = merchantId;
+            } else if (scope === 'agent' && agentId) {
+                params.agentId = agentId;
             }
 
             // 2. Add Category/Level Filters
@@ -99,7 +103,7 @@ export default function SystemLogsContainer({ scope = "master-admin", merchantId
         } finally {
             setLoading(false);
         }
-    }, [scope, logType, page, pageSize, date, merchantId]);
+    }, [scope, logType, page, pageSize, date, merchantId, agentId]);
 
     useEffect(() => {
         fetchLogs();
@@ -112,9 +116,14 @@ export default function SystemLogsContainer({ scope = "master-admin", merchantId
             <CardHeader className="pb-4">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                        <CardTitle className="text-xl font-bold">System Logs</CardTitle>
+                        <CardTitle className="text-xl font-bold">
+                            {scope === 'master-admin' ? 'Global Audit Trail' :
+                                scope === 'agent' ? 'Agent Activity Stream' : 'Store Operations Log'}
+                        </CardTitle>
                         <CardDescription>
-                            Monitor {scope.replace("-", " ")} activity and system events
+                            {scope === 'master-admin' ? 'Monitoring platform-wide events and system health' :
+                                scope === 'agent' ? 'Tracking sub-merchant activities and wallet transactions' :
+                                    'Detailed record of your store coupons and customer interactions'}
                         </CardDescription>
                     </div>
                     <div className="flex flex-wrap items-center gap-3">

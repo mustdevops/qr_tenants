@@ -1,10 +1,9 @@
-"use client";
-
 import SystemLogsContainer from "@/containers/logs/system-logs";
-import { useSession } from "next-auth/react";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
-export default function MerchantLogsPage() {
-    const { data: session } = useSession();
+export default async function MerchantLogsPage() {
+    const session = await getServerSession(authOptions);
     const merchantId = session?.user?.merchantId;
 
     return (
@@ -12,7 +11,8 @@ export default function MerchantLogsPage() {
             <div className="flex flex-col gap-2">
                 <h1 className="text-3xl font-bold tracking-tight">Store Logs</h1>
                 <p className="text-muted-foreground">
-                    Track your store's operations, coupon usage, and customer interactions.
+                    Track your store's operations, coupon usage, and customer
+                    interactions.
                 </p>
             </div>
             <SystemLogsContainer scope="merchant" merchantId={merchantId} />

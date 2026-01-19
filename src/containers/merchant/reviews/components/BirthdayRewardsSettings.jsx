@@ -33,7 +33,7 @@ export default function BirthdayRewardsSettings({
                     <Switch
                         checked={config.birthdayMessageEnabled}
                         onCheckedChange={(c) =>
-                            setConfig({ ...config, birthdayMessageEnabled: c })
+                            setConfig((prev) => ({ ...prev, birthdayMessageEnabled: c }))
                         }
                     />
                 </div>
@@ -56,10 +56,10 @@ export default function BirthdayRewardsSettings({
                                 className="bg-muted/30"
                                 value={config.daysBeforeBirthday}
                                 onChange={(e) =>
-                                    setConfig({
-                                        ...config,
+                                    setConfig(prev => ({
+                                        ...prev,
                                         daysBeforeBirthday: parseInt(e.target.value) || 0,
-                                    })
+                                    }))
                                 }
                             />
                         </div>
@@ -73,10 +73,10 @@ export default function BirthdayRewardsSettings({
                                 className="bg-muted/30"
                                 value={config.daysAfterBirthday}
                                 onChange={(e) =>
-                                    setConfig({
-                                        ...config,
+                                    setConfig(prev => ({
+                                        ...prev,
                                         daysAfterBirthday: parseInt(e.target.value) || 0,
-                                    })
+                                    }))
                                 }
                             />
                         </div>
@@ -92,7 +92,7 @@ export default function BirthdayRewardsSettings({
                             isOpen={birthdayBatchDropdownOpen}
                             setIsOpen={setBirthdayBatchDropdownOpen}
                             onSelect={(id) =>
-                                setConfig({ ...config, birthdayCouponBatchId: id })
+                                setConfig(prev => ({ ...prev, birthdayCouponBatchId: id }))
                             }
                             loading={loadingBatches}
                             placeholder="Select birthday treat..."

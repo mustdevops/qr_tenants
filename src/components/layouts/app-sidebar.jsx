@@ -53,23 +53,49 @@ export function AppSidebar({
   const subscriptionType =
     user?.subscriptionType || subscriptionProp || "temporary";
 
-  // Agent navigation
-  const agentNav = [
-    {
-      title: tAgent("dashboard"),
-      url: "/agent/dashboard",
-      icon: LayoutDashboard,
-    },
-    {
-      title: tAgent("merchants"),
-      url: "/agent/merchants",
-      icon: Users,
-    },
-    {
-      title: tAgent("wallet"),
-      url: "/agent/wallet",
-      icon: Wallet,
-    },
+    // Agent navigation
+    const agentNav = [
+        {
+            title: tAgent("dashboard"),
+            url: "/agent/dashboard",
+            icon: LayoutDashboard,
+        },
+        {
+            title: tAgent("merchants"),
+            url: "/agent/merchants",
+            icon: Users,
+        },
+        {
+            title: tAgent("wallet"),
+            url: "/agent/wallet",
+            icon: Wallet,
+        },
+        {
+            title: "Approvals",
+            url: "/agent/approvals",
+            icon: Package,
+        },
+        // {
+        //   title: tAgent("earnings"),
+        //   url: "/agent/earnings",
+        //   icon: DollarSign,
+        // },
+        // {
+        //   title: tAgent("statements"),
+        //   url: "/agent/statements",
+        //   icon: FileText,
+        // },
+        // {
+        //   title: tAgent("couponsync"),
+        //   url: "/agent/coupon-sync",
+        //   icon: RefreshCw,
+        // },
+        // {
+        //   title: tAgent("support"),
+        //   url: "/agent/support",
+        //   icon: MessageSquare,
+        // },
+    ];
 
     // {
     //   title: tAgent("earnings"),

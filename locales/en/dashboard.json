@@ -64,7 +64,8 @@
     "QRScanner": "QR Scanner",
     "statements": "Statements",
     "support": "Support",
-    "wallet": "Wallet"
+    "wallet": "Wallet",
+    "logs": "Activity Logs"
   },
   "agentWallet": {
     "agentwallet": "Agent Wallet",
@@ -98,7 +99,8 @@
     "purchase": "Purchase",
     "QRScanner": "QR Scanner",
     "serialCodes": "Serial Codes",
-    "wallet": "Wallet"
+    "wallet": "Wallet",
+    "logs": "System Logs"
   },
   "masterAdminSidebar": {
     "dashboard": "Dashboard",
@@ -106,6 +108,7 @@
     "agents": "Agents",
     "merchants": "Merchants",
     "commission": "Commission",
-    "approvals": "Approvals"
+    "approvals": "Approvals",
+    "logs": "System Logs"
   }
 }

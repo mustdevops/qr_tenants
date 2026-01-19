@@ -166,7 +166,7 @@ export default function PackageForm({ isEdit = false, onSuccess }) {
 
       onSuccess?.();
       if (!isEdit) reset();
-      router.push("/agent/packages");
+      router.push("/master-admin/packages");
     } catch (err) {
       toast.error(
         err?.response?.data?.message ||
@@ -184,7 +184,7 @@ export default function PackageForm({ isEdit = false, onSuccess }) {
         params: { admin_id: session?.user?.adminId },
       });
       toast.success("Package deleted successfully");
-      router.push("/agent/packages");
+      router.push("/master-admin/packages");
     } catch (err) {
       toast.error(err?.response?.data?.message || "Failed to delete package");
     } finally {

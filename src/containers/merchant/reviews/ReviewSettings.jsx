@@ -157,12 +157,12 @@ export default function ReviewSettings() {
       const payload = {
         reviews: config.enablePresetReviews
           ? config.presets.map((text, index) => ({
-            id: index + 1,
-            merchant_id: merchantId,
-            reviewText: text.trim(),
-            isActive: true,
-            displayOrder: index + 1,
-          }))
+              id: index + 1,
+              merchant_id: merchantId,
+              reviewText: text.trim(),
+              isActive: true,
+              displayOrder: index + 1,
+            }))
           : [],
       };
 
@@ -219,9 +219,9 @@ export default function ReviewSettings() {
           : null,
         xiaohongshu_url: config.enableRed ? config.redReviewLink : null,
         paid_ads: config.paid_ads,
-        paid_ad_image: config.paid_ad_image,
-        paid_ad_video: config.paid_ad_video,
-        paid_ad_type: config.paid_ad_video_status ? "video" : "image",
+        //  paid_ad_image: config.paid_ad_image,
+        //  paid_ad_video: config.paid_ad_video,
+        //  paid_ad_type: config.paid_ad_video_status ? "video" : "image",
         paid_ad_placement: config.placement,
         // Reward settings - Lucky Draw or Coupon Batch
         luckydraw_enabled: config.luckyDrawEnabled,
@@ -308,10 +308,7 @@ export default function ReviewSettings() {
         </div>
       </div>
 
-      <StickySaveBar
-        loading={loadingSettings}
-        onSave={handleSaveAllSettings}
-      />
+      <StickySaveBar loading={loadingSettings} onSave={handleSaveAllSettings} />
     </div>
   );
 }

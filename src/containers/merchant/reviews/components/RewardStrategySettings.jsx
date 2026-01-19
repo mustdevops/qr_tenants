@@ -34,17 +34,17 @@ export default function RewardStrategySettings({
                 {/* Lucky Draw Option */}
                 <div
                     className={`relative p-4 rounded-xl border-2 transition-all cursor-pointer ${config.luckyDrawEnabled
-                            ? "border-primary bg-primary/5"
-                            : "border-muted hover:border-primary/30"
+                        ? "border-primary bg-primary/5"
+                        : "border-muted hover:border-primary/30"
                         }`}
-                    onClick={() => setConfig({ ...config, luckyDrawEnabled: true })}
+                    onClick={() => setConfig(prev => ({ ...prev, luckyDrawEnabled: true }))}
                 >
                     <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3">
                             <div
                                 className={`p-2 rounded-lg ${config.luckyDrawEnabled
-                                        ? "bg-primary text-primary-foreground"
-                                        : "bg-muted text-muted-foreground"
+                                    ? "bg-primary text-primary-foreground"
+                                    : "bg-muted text-muted-foreground"
                                     }`}
                             >
                                 <Sparkles className="h-5 w-5" />
@@ -82,17 +82,17 @@ export default function RewardStrategySettings({
                 {/* Direct Coupon Option */}
                 <div
                     className={`relative p-4 rounded-xl border-2 transition-all cursor-pointer ${!config.luckyDrawEnabled
-                            ? "border-primary bg-primary/5"
-                            : "border-muted hover:border-primary/30"
+                        ? "border-primary bg-primary/5"
+                        : "border-muted hover:border-primary/30"
                         }`}
-                    onClick={() => setConfig({ ...config, luckyDrawEnabled: false })}
+                    onClick={() => setConfig(prev => ({ ...prev, luckyDrawEnabled: false }))}
                 >
                     <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3">
                             <div
                                 className={`p-2 rounded-lg ${!config.luckyDrawEnabled
-                                        ? "bg-primary text-primary-foreground"
-                                        : "bg-muted text-muted-foreground"
+                                    ? "bg-primary text-primary-foreground"
+                                    : "bg-muted text-muted-foreground"
                                     }`}
                             >
                                 <Ticket className="h-5 w-5" />
@@ -115,7 +115,10 @@ export default function RewardStrategySettings({
                     </div>
 
                     {!config.luckyDrawEnabled && (
-                        <div className="mt-4 animate-in fade-in slide-in-from-top-2">
+                        <div
+                            className="mt-4 animate-in fade-in slide-in-from-top-2"
+                            onClick={(e) => e.stopPropagation()}
+                        >
                             <Label className="text-xs font-medium mb-1.5 block">
                                 Select Coupon Batch <span className="text-red-500">*</span>
                             </Label>
@@ -124,7 +127,7 @@ export default function RewardStrategySettings({
                                 batches={couponBatches}
                                 isOpen={batchDropdownOpen}
                                 setIsOpen={setBatchDropdownOpen}
-                                onSelect={(id) => setConfig({ ...config, selectedBatchId: id })}
+                                onSelect={(id) => setConfig(prev => ({ ...prev, selectedBatchId: id }))}
                                 loading={loadingBatches}
                                 placeholder="Choose regular reward..."
                             />

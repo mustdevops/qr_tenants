@@ -524,7 +524,7 @@ export default function AgentLandingPage() {
                             <div className="flex items-center justify-between mb-4 gap-3">
                               <h3
                                 className={cn(
-                                  "font-black text-xl leading-tight truncate tracking-tight transition-colors duration-300",
+                                  "font-semibold text-xl leading-tight truncate tracking-tight transition-colors duration-300",
                                   styles.text,
                                   isSelected && styles.accent
                                 )}

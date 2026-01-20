@@ -186,11 +186,7 @@ export function AppSidebar({
       url: "/master-admin/dashboard",
       icon: LayoutDashboard,
     },
-    {
-      title: tMasterAdmin("packages"),
-      url: "/master-admin/packages",
-      icon: Package,
-    },
+
     {
       title: tMasterAdmin("agents"),
       url: "/master-admin/agents",
@@ -200,6 +196,11 @@ export function AppSidebar({
       title: tMasterAdmin("merchants"),
       url: "/master-admin/merchants",
       icon: Users,
+    },
+    {
+      title: tMasterAdmin("packages"),
+      url: "/master-admin/packages",
+      icon: Package,
     },
     {
       title: tMasterAdmin("commission"),

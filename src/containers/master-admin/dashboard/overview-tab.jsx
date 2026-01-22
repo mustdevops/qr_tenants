@@ -94,7 +94,7 @@ export default function MasterAdminOverviewTab() {
                 const startDate = formatDate(dateRange.from);
                 const endDate = formatDate(dateRange.to);
                 const res = await axiosInstance.get(`/super-admins/dashboard`, {
-                    params: { startDate, endDate }
+                    // params: { startDate, endDate }
                 });
                 if (res?.data?.data) setData(res.data.data);
             } catch (error) {

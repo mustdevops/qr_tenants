@@ -27,10 +27,10 @@ export function SubscriptionExpiryPopup({ isOpen, onClose }) {
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2 text-destructive">
                         <AlertTriangle className="h-5 w-5" />
-                        Subscription Expired
+                        Subscription Purchase Required
                     </DialogTitle>
                     <DialogDescription className="py-4">
-                        Your agent subscription has expired. Most features will be restricted until you renew your plan. Please top up your balance to restore full access.
+                        Your agent subscription purchase is required. Most features will be restricted until you purchase your plan. Please top up your balance to restore full access.
                     </DialogDescription>
                 </DialogHeader>
                 <DialogFooter className="flex sm:justify-between gap-2">

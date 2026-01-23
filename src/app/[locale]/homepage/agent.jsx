@@ -37,6 +37,7 @@ import {
   MerchantList,
   MerchantDetail,
 } from "./components/MerchantMarketplace";
+import { cn } from "@/lib/utils";
 
 export default function AgentLandingPage() {
   const tHeroSection = useTranslations("Homepage.heroSection");
@@ -430,8 +431,8 @@ export default function AgentLandingPage() {
         <section className="px-6 lg:px-10 max-w-[1700px] mx-auto pb-24">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             {/* Left Sidebar (Ads Only) */}
-            <div className="hidden xl:block lg:col-span-2 sticky top-28 space-y-8 pt-16">
-              {leftAd && (
+            {leftAd && (
+              <div className="hidden xl:block lg:col-span-2 sticky top-28 space-y-8 pt-16">
                 <div className="space-y-4">
                   <div className="flex items-center gap-2 mb-2 opacity-50 px-2">
                     <span className="h-px flex-1 bg-slate-300"></span>
@@ -442,16 +443,16 @@ export default function AgentLandingPage() {
                   </div>
                   <SidebarAd ad={leftAd} />
                 </div>
-              )}
-              {!leftAd && (
-                <div className="h-32 rounded-2xl border border-dashed border-slate-200 flex items-center justify-center text-slate-400 text-xs font-medium">
-                  Ad Space
-                </div>
-              )}
-            </div>
+              </div>
+            )}
 
             {/* Middle Column: Merchant Grid (Main Content) */}
-            <div className="col-span-1 lg:col-span-8 xl:col-span-7 w-full min-w-0">
+            <div
+              className={cn(
+                "col-span-1 lg:col-span-8 w-full min-w-0",
+                leftAd ? "xl:col-span-7" : "xl:col-span-9",
+              )}
+            >
               <MerchantList
                 merchants={filteredMerchants}
                 selectedMerchantId={selectedMerchantId}

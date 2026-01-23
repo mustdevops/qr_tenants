@@ -151,8 +151,8 @@ function getCategoryImage(category, id) {
   // If id is undefined/null, use a random one based on random number (not ideal for SSR hydration but fallback)
   const seed = id
     ? String(id)
-        .split("")
-        .reduce((a, b) => a + b.charCodeAt(0), 0)
+      .split("")
+      .reduce((a, b) => a + b.charCodeAt(0), 0)
     : Math.floor(Math.random() * 1000);
   return images[seed % images.length];
 }
@@ -307,10 +307,12 @@ export function MerchantList({
             >
               {/* Cover Image Area */}
               <div className="h-32 bg-slate-100 relative overflow-hidden">
-                <img
+                <Image
                   src={getCategoryImage(merchant.category, merchant.id)}
                   alt="cover"
-                  className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                  className="object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                  fill
+                  unoptimized
                 />
                 <div className="absolute inset-0 bg-linear-to-t from-black/50 to-transparent" />
                 <Badge className="absolute top-3 right-3 bg-white/90 text-slate-800 backdrop-blur-sm hover:bg-white border-none shadow-sm font-bold">
@@ -413,10 +415,12 @@ export function MerchantDetail({ activeMerchant, handleGetCoupon }) {
     <div className="bg-white rounded-4xl shadow-2xl shadow-slate-200/50 border border-slate-100 overflow-hidden sticky top-28 animate-in slide-in-from-right-10 duration-500 ease-out">
       {/* Header */}
       <div className="relative h-48 bg-slate-900">
-        <img
+        <Image
           src={getCategoryImage(activeMerchant.category, activeMerchant.id)}
-          className="w-full h-full object-cover opacity-40"
+          className="object-cover opacity-40"
           alt="header"
+          fill
+          unoptimized
         />
         <div className="absolute inset-0 bg-linear-to-b from-transparent to-slate-900/90" />
         <div className="absolute top-4 right-4">

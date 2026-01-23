@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { useRouter, Link } from "@/i18n/routing";
 import {
   ArrowRight,
   QrCode,
@@ -21,7 +21,6 @@ import {
 import { Button } from "@/components/ui/button";
 import TableToolbar from "@/components/common/table-toolbar";
 import { useTranslations, useLocale } from "next-intl";
-import { useRouter } from "next/navigation";
 import { LanguageSwitcher } from "@/components/common/language-switcher";
 import { useEffect, useState, useMemo } from "react";
 import {
@@ -102,9 +101,9 @@ export default function MasterAdminLandingPage() {
           country: agent.country || "Unknown",
           status:
             agent.is_active === true ||
-            agent.is_active === 1 ||
-            agent.user?.is_active === true ||
-            agent.user?.is_active === 1
+              agent.is_active === 1 ||
+              agent.user?.is_active === true ||
+              agent.user?.is_active === 1
               ? "active"
               : "inactive",
           joined: new Date().toLocaleDateString(),
@@ -146,7 +145,7 @@ export default function MasterAdminLandingPage() {
   );
 
   const handleAgentClick = (agent) => {
-    router.push(`/${locale}/homepage/agent?agentId=${agent.id}`);
+    router.push(`/homepage/agent?agentId=${agent.id}`);
   };
 
   return (
@@ -182,12 +181,12 @@ export default function MasterAdminLandingPage() {
           </div>
           <LanguageSwitcher />
           <Link
-            href={`/${locale}/login`}
+            href={`/login`}
             className="text-sm font-bold hover:text-primary transition-colors hidden sm:block"
           >
             Sign In
           </Link>
-          <Link href={`/${locale}/login`}>
+          <Link href={`/login`}>
             <Button className="rounded-full px-6 font-bold shadow-lg shadow-primary/20">
               Get Started
             </Button>

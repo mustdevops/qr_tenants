@@ -4,6 +4,7 @@ import { ExternalLink, ChevronRight, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { Link } from "@/i18n/routing";
 
 // --- HELPERS ---
 let baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "";
@@ -40,21 +41,23 @@ export function TopBannerAd({ ad }) {
 
     return (
         <div className="w-full mb-8 lg:mb-12 group cursor-pointer">
-            <a
+            <Link
                 href={ad.redirectUrl || "#"}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block relative w-full h-[320px] md:h-[400px] rounded-3xl overflow-hidden shadow-2xl shadow-slate-200/50 ring-1 ring-black/5"
+                className="block relative w-full h-80 md:h-[400px] rounded-3xl overflow-hidden shadow-2xl shadow-slate-200/50 ring-1 ring-black/5"
             >
                 {/* Background Image with Scale Effect */}
                 <div className="absolute inset-0 bg-slate-100">
-                    <img
+                    <Image
                         src={getAdImage(ad.image)}
-                        className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+                        className="object-cover transition-transform duration-1000 group-hover:scale-105"
                         alt={ad.title}
+                        fill
+                        unoptimized
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                    <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent" />
+                    <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent" />
+                    <div className="absolute inset-0 bg-linear-to-r from-black/60 to-transparent" />
                 </div>
 
                 {/* Content Overlay */}
@@ -87,7 +90,7 @@ export function TopBannerAd({ ad }) {
                         </div>
                     </div>
                 </div>
-            </a>
+            </Link>
         </div>
     );
 }
@@ -97,22 +100,24 @@ export function SidebarAd({ ad, placement }) {
 
     return (
         <div className={cn("w-full mb-8 relative group")}>
-            <a
+            <Link
                 href={ad.redirectUrl || "#"}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="block bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 ring-1 ring-slate-100 border border-slate-100"
             >
-                <div className="relative aspect-[4/5] overflow-hidden">
+                <div className="relative aspect-4/5 overflow-hidden">
                     <span className="absolute top-3 left-3 z-10 px-2 py-1 bg-black/60 backdrop-blur-md text-white text-[9px] font-bold uppercase tracking-wider rounded border border-white/10">
                         Ad
                     </span>
-                    <img
+                    <Image
                         src={getAdImage(ad.image)}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        className="object-cover transition-transform duration-700 group-hover:scale-110"
                         alt={ad.title}
+                        fill
+                        unoptimized
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80" />
+                    <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent opacity-80" />
 
                     <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
                         <h4 className="text-lg font-bold leading-snug mb-1">{ad.title}</h4>
@@ -122,7 +127,7 @@ export function SidebarAd({ ad, placement }) {
                         </div>
                     </div>
                 </div>
-            </a>
+            </Link>
         </div>
     );
 }
@@ -132,7 +137,7 @@ export function InlineAd({ ad }) {
 
     return (
         <div className="col-span-1 md:col-span-2 lg:col-span-1 h-full min-h-[300px]">
-            <a
+            <Link
                 href={ad.redirectUrl || "#"}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -144,10 +149,12 @@ export function InlineAd({ ad }) {
                             Sponsored
                         </span>
                     </div>
-                    <img
+                    <Image
                         src={getAdImage(ad.image)}
-                        className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-500 group-hover:scale-105"
+                        className="object-cover grayscale-20 group-hover:grayscale-0 transition-all duration-500 group-hover:scale-105"
                         alt={ad.title}
+                        fill
+                        unoptimized
                     />
                 </div>
                 <div className="p-5 flex-1 flex flex-col">
@@ -166,7 +173,7 @@ export function InlineAd({ ad }) {
                         </span>
                     </div>
                 </div>
-            </a>
+            </Link>
         </div>
     );
 }
@@ -184,29 +191,31 @@ export function BottomBannerAd({ ad }) {
                 <span className="h-px w-8 bg-slate-300"></span>
             </div>
 
-            <a
+            <Link
                 href={ad.redirectUrl || "#"}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block w-full relative overflow-hidden rounded-[2rem] group shadow-2xl transition-all hover:shadow-[0_20px_50px_rgba(0,0,0,0.2)]"
+                className="block w-full relative overflow-hidden rounded-4xl group shadow-2xl transition-all hover:shadow-[0_20px_50px_rgba(0,0,0,0.2)]"
             >
                 <div className="absolute inset-0 bg-[#0B1120]" />
 
                 {/* Ultra Compact Slim Layout */}
                 <div className="relative flex flex-col md:flex-row items-center h-full">
                     {/* Image Section - Much smaller */}
-                    <div className="shrink-0 w-full md:w-[240px] lg:w-[280px] self-stretch relative overflow-hidden">
+                    <div className="shrink-0 w-full md:w-60 lg:w-[280px] self-stretch relative overflow-hidden">
                         <div className="absolute top-2 left-2 z-10">
                             <span className="px-1.5 py-px bg-black/60 backdrop-blur-md text-white text-[8px] font-bold uppercase tracking-wider rounded border border-white/10">
                                 Ad
                             </span>
                         </div>
-                        <img
+                        <Image
                             src={getAdImage(ad.image)}
-                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                            className="object-cover transition-transform duration-700 group-hover:scale-105"
                             alt={ad.title}
+                            fill
+                            unoptimized
                         />
-                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-[#0B1120]/30 md:to-[#0B1120]" />
+                        <div className="absolute inset-0 bg-linear-to-r from-transparent via-transparent to-[#0B1120]/30 md:to-[#0B1120]" />
                     </div>
 
                     <div className="flex-1 px-4 py-3 md:px-6 md:py-2 text-center md:text-left flex flex-col justify-center min-h-[100px]">
@@ -233,7 +242,7 @@ export function BottomBannerAd({ ad }) {
                         </div>
                     </div>
                 </div>
-            </a>
+            </Link>
         </div>
     );
 }

@@ -3,6 +3,7 @@
 import { useLocale } from 'next-intl';
 import { usePathname, useRouter } from '@/i18n/routing';
 import { getLocaleDisplayName, routing } from '@/i18n/routing';
+import { useSearchParams } from 'next/navigation';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,9 +17,14 @@ export function LanguageSwitcher() {
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   const handleLocaleChange = (newLocale) => {
-    router.replace(pathname, { locale: newLocale });
+    const params = searchParams.toString();
+    router.replace(
+      params ? `${pathname}?${params}` : pathname,
+      { locale: newLocale }
+    );
   };
 
   return (

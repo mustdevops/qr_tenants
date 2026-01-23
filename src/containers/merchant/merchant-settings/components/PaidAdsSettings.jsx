@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useRef } from "react";
+import Image from "next/image";
 import {
   Card,
   CardHeader,
@@ -341,10 +342,12 @@ export default function PaidAdsSettings({ config, setConfig, merchantId }) {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {pendingFile?.type === "image" && (
                     <div className="relative aspect-video rounded-xl overflow-hidden border-2 border-primary/50 bg-background shadow-md group">
-                      <img
+                      <Image
                         src={pendingFile.previewUrl}
                         alt="Pending Upload"
-                        className="w-full h-full object-cover"
+                        className="object-cover"
+                        fill
+                        unoptimized
                       />
                       <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                         <Button
@@ -367,10 +370,12 @@ export default function PaidAdsSettings({ config, setConfig, merchantId }) {
                         key={index}
                         className="relative aspect-video rounded-xl overflow-hidden border bg-background group shadow-sm"
                       >
-                        <img
+                        <Image
                           src={getImageUrl(imgUrl)}
                           alt={`Ad ${index + 1}`}
-                          className="w-full h-full object-cover"
+                          className="object-cover"
+                          fill
+                          unoptimized
                         />
                         <div
                           className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 cursor-zoom-in"
@@ -633,6 +638,7 @@ export default function PaidAdsSettings({ config, setConfig, merchantId }) {
                 </DialogDescription>
                 <div className="relative flex items-center justify-center p-4">
                   {previewContent.type === "image" ? (
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={previewContent.url}
                       alt="Preview"

@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState, useMemo, useCallback } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
+import { useRouter, Link } from "@/i18n/routing";
 import axiosInstance from "@/lib/axios";
 import {
   Loader2,
@@ -25,7 +26,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { LanguageSwitcher } from "@/components/common/language-switcher";
-import Link from "next/link";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   TopBannerAd,
@@ -95,7 +96,7 @@ export default function AgentLandingPage() {
             item.paid_ad_placement || item.settings?.paid_ad_placement || "top",
           title: item.business_name || "Sponsored Deal",
           description: `Visit ${item.business_name} in ${item.city}, ${item.country}.`,
-          redirectUrl: `/${locale}/customer/review?mid=${item.id}`,
+          redirectUrl: `/customer/review?mid=${item.id}`,
           cta: "VIEW OFFER",
           tagline: item.city
             ? `EXCLUSIVE IN ${item.city.toUpperCase()}`
@@ -317,7 +318,7 @@ export default function AgentLandingPage() {
             <Button
               size="sm"
               className="hidden sm:flex rounded-full font-bold shadow-md shadow-primary/20"
-              onClick={() => router.push(`/${locale}/login`)}
+              onClick={() => router.push(`/login`)}
             >
               Login
             </Button>
@@ -355,10 +356,12 @@ export default function AgentLandingPage() {
           {/* Background & Content (Same as before) */}
           {/* ... (Keep existing hero content) ... */}
           <div className="absolute inset-0 bg-slate-900">
-            <image
+            <Image
               src="https://images.unsplash.com/photo-1556742049-0cfed4f7a07d?auto=format&fit=crop&w=1600&q=80"
-              className="w-full h-full object-cover opacity-20 mix-blend-overlay"
+              className="object-cover opacity-20 mix-blend-overlay"
               alt="hero bg"
+              fill
+              unoptimized
             />
           </div>
           <div className="absolute inset-0 bg-linear-to-b from-slate-900/50 via-slate-900/80 to-slate-50" />

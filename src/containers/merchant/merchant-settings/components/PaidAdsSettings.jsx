@@ -63,64 +63,72 @@ export default function PaidAdsSettings({ config, setConfig, merchantId }) {
   });
 
   const handleSubmit = async () => {
-    if (!pendingFile || !merchantId) return;
+    if (!merchantId) return;
 
     setUploading(true);
-    const formData = new FormData();
-
     try {
-      if (pendingFile.type === "image") {
-        formData.append(
-          "paidAdImage",
-          pendingFile.file,
-          pendingFile.filename || "image.jpg",
-        );
-        formData.append("paidAdPlacement", config.placement || "top");
+      // 1. Update general settings (toggle, placement)
+      await axiosInstance.patch(`/merchant-settings/merchant/${merchantId}`, {
+        paid_ads: config.paid_ads,
+        paid_ad_placement: config.placement || "top",
+      });
 
-        const response = await axiosInstance.post(
-          `/merchant-settings/merchant/${merchantId}/paid-ad-image`,
-          formData,
-          {
-            headers: { "Content-Type": "multipart/form-data" },
-          },
-        );
+      // 2. Handle upload if pending
+      if (pendingFile) {
+        const formData = new FormData();
+        if (pendingFile.type === "image") {
+          formData.append(
+            "paidAdImage",
+            pendingFile.file,
+            pendingFile.filename || "image.jpg",
+          );
+          formData.append("paidAdPlacement", config.placement || "top");
 
-        if (response.data?.data?.paid_ad_image) {
-          const newImageUrl = response.data.data.paid_ad_image;
-          setConfig((prev) => ({
-            ...prev,
-            paid_ad_image: newImageUrl,
-            paid_ad_images: [...(prev.paid_ad_images || []), newImageUrl],
-            paid_ad_video_status: false,
-          }));
-          toast.success("Paid ad image uploaded successfully");
+          const response = await axiosInstance.post(
+            `/merchant-settings/merchant/${merchantId}/paid-ad-image`,
+            formData,
+            {
+              headers: { "Content-Type": "multipart/form-data" },
+            },
+          );
+
+          if (response.data?.data?.paid_ad_image) {
+            const newImageUrl = response.data.data.paid_ad_image;
+            setConfig((prev) => ({
+              ...prev,
+              paid_ad_image: newImageUrl,
+              paid_ad_images: [...(prev.paid_ad_images || []), newImageUrl],
+              paid_ad_video_status: false,
+            }));
+          }
+        } else if (pendingFile.type === "video") {
+          formData.append("paidAdVideo", pendingFile.file);
+
+          const response = await axiosInstance.post(
+            `/merchant-settings/merchant/${merchantId}/paid-ad-video`,
+            formData,
+            {
+              headers: { "Content-Type": "multipart/form-data" },
+            },
+          );
+
+          if (response.data?.data?.url) {
+            const newVideoUrl = response.data.data.url;
+            setConfig((prev) => ({
+              ...prev,
+              paid_ad_video: newVideoUrl,
+              paid_ad_videos: [...(prev.paid_ad_videos || []), newVideoUrl],
+              paid_ad_video_status: true,
+            }));
+          }
         }
-      } else if (pendingFile.type === "video") {
-        formData.append("paidAdVideo", pendingFile.file);
-
-        const response = await axiosInstance.post(
-          `/merchant-settings/merchant/${merchantId}/paid-ad-video`,
-          formData,
-          {
-            headers: { "Content-Type": "multipart/form-data" },
-          },
-        );
-
-        if (response.data?.data?.url) {
-          const newVideoUrl = response.data.data.url;
-          setConfig((prev) => ({
-            ...prev,
-            paid_ad_video: newVideoUrl,
-            paid_ad_videos: [...(prev.paid_ad_videos || []), newVideoUrl],
-            paid_ad_video_status: true,
-          }));
-          toast.success("Video uploaded successfully");
-        }
+        setPendingFile(null);
       }
-      setPendingFile(null);
+
+      toast.success("Settings and ad updated successfully");
     } catch (error) {
       console.error(error);
-      toast.error(error?.response?.data?.message || "Error uploading file");
+      toast.error(error?.response?.data?.message || "Error saving settings");
     } finally {
       setUploading(false);
     }
@@ -135,33 +143,11 @@ export default function PaidAdsSettings({ config, setConfig, merchantId }) {
     setCroppedAreaPixels(croppedAreaPixels);
   }, []);
 
-  const handleTogglePaidAds = async (checked) => {
-    if (!merchantId) return;
-
-    const newPlacement = config.placement || "top";
-
-    // Optimistic update
+  const handleTogglePaidAds = (checked) => {
     setConfig({
       ...config,
       paid_ads: checked,
-      // placement: newPlacement
     });
-
-    try {
-      await axiosInstance.patch(`/merchant-settings/merchant/${merchantId}`, {
-        paid_ads: checked,
-        paid_ad_placement: newPlacement,
-      });
-      toast.success("Settings updated successfully");
-    } catch (error) {
-      console.error(error);
-      toast.error("Insufficient paid ad credits");
-      // Revert
-      setConfig({
-        ...config,
-        paid_ads: !checked,
-      });
-    }
   };
 
   const handleFileChange = async (e) => {
@@ -294,19 +280,8 @@ export default function PaidAdsSettings({ config, setConfig, merchantId }) {
               <Label>Ad Placement</Label>
               <Select
                 value={config.placement || "top"}
-                onValueChange={async (val) => {
+                onValueChange={(val) => {
                   setConfig({ ...config, placement: val });
-                  try {
-                    await axiosInstance.patch(
-                      `/merchant-settings/merchant/${merchantId}`,
-                      {
-                        paid_ad_placement: val,
-                      },
-                    );
-                    toast.success("Ad placement updated");
-                  } catch (err) {
-                    console.error("Failed to update placement:", err);
-                  }
                 }}
               >
                 <SelectTrigger>
@@ -341,7 +316,9 @@ export default function PaidAdsSettings({ config, setConfig, merchantId }) {
               <TabsContent value="image" className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {pendingFile?.type === "image" && (
-                    <div className="relative aspect-video rounded-xl overflow-hidden border-2 border-primary/50 bg-background shadow-md group">
+                    <div className="relative aspect-video rounded-xl overflow-hidden border-2 border-primary/50 bg-background shadow-md group cursor-zoom-in"
+                      onClick={() => handlePreview("image", pendingFile.previewUrl)}
+                    >
                       <Image
                         src={pendingFile.previewUrl}
                         alt="Pending Upload"
@@ -354,7 +331,10 @@ export default function PaidAdsSettings({ config, setConfig, merchantId }) {
                           variant="destructive"
                           size="icon"
                           className="h-8 w-8"
-                          onClick={() => setPendingFile(null)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setPendingFile(null);
+                          }}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -450,7 +430,9 @@ export default function PaidAdsSettings({ config, setConfig, merchantId }) {
               <TabsContent value="video" className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {pendingFile?.type === "video" && (
-                    <div className="relative aspect-video rounded-xl overflow-hidden border-2 border-primary/50 bg-background shadow-md group">
+                    <div className="relative aspect-video rounded-xl overflow-hidden border-2 border-primary/50 bg-background shadow-md group cursor-zoom-in"
+                      onClick={() => handlePreview("video", pendingFile.previewUrl)}
+                    >
                       <video
                         src={pendingFile.previewUrl}
                         className="w-full h-full object-cover opacity-80"
@@ -464,7 +446,10 @@ export default function PaidAdsSettings({ config, setConfig, merchantId }) {
                           variant="destructive"
                           size="icon"
                           className="h-8 w-8"
-                          onClick={() => setPendingFile(null)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setPendingFile(null);
+                          }}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -666,7 +651,7 @@ export default function PaidAdsSettings({ config, setConfig, merchantId }) {
             <div className="flex justify-end pt-4">
               <Button
                 onClick={handleSubmit}
-                disabled={uploading || !pendingFile}
+                disabled={uploading}
                 className="w-full sm:w-auto"
               >
                 {uploading ? (

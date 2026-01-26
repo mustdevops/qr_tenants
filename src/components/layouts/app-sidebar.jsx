@@ -202,6 +202,11 @@ export function AppSidebar({
       url: "/master-admin/packages",
       icon: Package,
     },
+    {
+      title: tMasterAdmin("settings"),
+      url: "/master-admin/superadmin_settings",
+      icon: Settings,
+    },
     // {
     //   title: tMasterAdmin("commission"),
     //   url: "/master-admin/commission",

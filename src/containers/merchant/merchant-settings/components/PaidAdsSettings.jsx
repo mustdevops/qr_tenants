@@ -67,10 +67,11 @@ export default function PaidAdsSettings({ config, setConfig, merchantId }) {
 
     setUploading(true);
     try {
-      // 1. Update general settings (toggle, placement)
+      // 1. Update general settings (toggle, placement, duration)
       await axiosInstance.patch(`/merchant-settings/merchant/${merchantId}`, {
         paid_ads: config.paid_ads,
         paid_ad_placement: config.placement || "top",
+        paid_ad_duration: parseInt(config.paid_ad_duration || "7", 10),
       });
 
       // 2. Handle upload if pending
@@ -223,30 +224,46 @@ export default function PaidAdsSettings({ config, setConfig, merchantId }) {
     }
   };
 
-  const handleDeleteImage = (indexToRemove) => {
-    setConfig((prev) => {
-      const currentImages = prev.paid_ad_images || [];
-      const newImages = currentImages.filter((_, i) => i !== indexToRemove);
-      return {
+  const handleDeleteImage = async () => {
+    if (!merchantId) return;
+
+    try {
+      await axiosInstance.delete(
+        `/merchant-settings/merchant/${merchantId}/paid-ad-image`
+      );
+
+      setConfig((prev) => ({
         ...prev,
-        paid_ad_images: newImages,
-        paid_ad_image:
-          newImages.length > 0 ? newImages[newImages.length - 1] : "",
-      };
-    });
+        paid_ad_images: [],
+        paid_ad_image: "",
+      }));
+
+      toast.success("Image deleted successfully");
+    } catch (error) {
+      console.error("Error deleting image:", error);
+      toast.error("Failed to delete image");
+    }
   };
 
-  const handleDeleteVideo = (indexToRemove) => {
-    setConfig((prev) => {
-      const currentVideos = prev.paid_ad_videos || [];
-      const newVideos = currentVideos.filter((_, i) => i !== indexToRemove);
-      return {
+  const handleDeleteVideo = async () => {
+    if (!merchantId) return;
+
+    try {
+      await axiosInstance.delete(
+        `/merchant-settings/merchant/${merchantId}/paid-ad-video`
+      );
+
+      setConfig((prev) => ({
         ...prev,
-        paid_ad_videos: newVideos,
-        paid_ad_video:
-          newVideos.length > 0 ? newVideos[newVideos.length - 1] : "",
-      };
-    });
+        paid_ad_videos: [],
+        paid_ad_video: "",
+      }));
+
+      toast.success("Video deleted successfully");
+    } catch (error) {
+      console.error("Error deleting video:", error);
+      toast.error("Failed to delete video");
+    }
   };
 
   return (
@@ -282,24 +299,45 @@ export default function PaidAdsSettings({ config, setConfig, merchantId }) {
 
         {config.paid_ads && (
           <div className="animate-in fade-in slide-in-from-top-4 duration-300 space-y-4">
-            <div className="space-y-2">
-              <Label>Ad Placement</Label>
-              <Select
-                value={config.placement || "top"}
-                onValueChange={(val) => {
-                  setConfig({ ...config, placement: val });
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select placement" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="top">Top</SelectItem>
-                  <SelectItem value="left">Left</SelectItem>
-                  <SelectItem value="right">Right</SelectItem>
-                  <SelectItem value="bottom">Bottom</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Ad Placement</Label>
+                <Select
+                  value={config.placement || "top"}
+                  onValueChange={(val) => {
+                    setConfig({ ...config, placement: val });
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select placement" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="top">Top</SelectItem>
+                    <SelectItem value="left">Left</SelectItem>
+                    <SelectItem value="right">Right</SelectItem>
+                    <SelectItem value="bottom">Bottom</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Duration</Label>
+                <Select
+                  value={config.paid_ad_duration ? String(config.paid_ad_duration) : "7"}
+                  onValueChange={(val) => {
+                    setConfig({ ...config, paid_ad_duration: parseInt(val, 10) });
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select duration" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="7">7 Days</SelectItem>
+                    <SelectItem value="14">14 Days</SelectItem>
+                    <SelectItem value="30">30 Days</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
             <Tabs
               value={activeTab}
@@ -320,8 +358,8 @@ export default function PaidAdsSettings({ config, setConfig, merchantId }) {
 
               {/* Image Tab */}
               <TabsContent value="image" className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {pendingFile?.type === "image" && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {pendingFile?.type === "image" ? (
                     <div
                       className="relative aspect-video rounded-xl overflow-hidden border-2 border-primary/50 bg-background shadow-md group cursor-zoom-in"
                       onClick={() =>
@@ -352,93 +390,70 @@ export default function PaidAdsSettings({ config, setConfig, merchantId }) {
                         Pending
                       </div>
                     </div>
-                  )}
-                  {config.paid_ad_images &&
-                    config.paid_ad_images.map((imgUrl, index) => (
+                  ) : config.paid_ad_image ? (
+                    <div className="relative aspect-video rounded-xl overflow-hidden border bg-background group shadow-sm">
+                      <Image
+                        src={getImageUrl(config.paid_ad_image)}
+                        alt="Active Ad"
+                        className="object-cover"
+                        fill
+                        unoptimized
+                      />
                       <div
-                        key={index}
-                        className="relative aspect-video rounded-xl overflow-hidden border bg-background group shadow-sm"
+                        className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 cursor-zoom-in"
+                        onClick={() => handlePreview("image", config.paid_ad_image)}
                       >
-                        <Image
-                          src={getImageUrl(imgUrl)}
-                          alt={`Ad ${index + 1}`}
-                          className="object-cover"
-                          fill
-                          unoptimized
-                        />
-                        <div
-                          className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 cursor-zoom-in"
-                          onClick={() => handlePreview("image", imgUrl)}
+                        <Button
+                          variant="destructive"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteImage();
+                          }}
                         >
-                          {config.paid_ad_image !== imgUrl && (
-                            <Button
-                              variant="secondary"
-                              size="sm"
-                              className="h-8 text-xs"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setConfig({
-                                  ...config,
-                                  paid_ad_image: imgUrl,
-                                  paid_ad_video_status: false,
-                                });
-                              }}
-                            >
-                              Set Active
-                            </Button>
-                          )}
-                          <Button
-                            variant="destructive"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteImage(index);
-                            }}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                        {config.paid_ad_image === imgUrl &&
-                          !config.paid_ad_video_status && (
-                            <div className="absolute top-2 right-2 bg-primary text-primary-foreground text-[10px] px-2 py-0.5 rounded-full font-medium shadow-sm flex items-center gap-1">
-                              <Check className="w-3 h-3" /> Active
-                            </div>
-                          )}
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
-                    ))}
-
-                  <Label
-                    htmlFor="ad-image-upload"
-                    className="aspect-video rounded-xl border-2 border-dashed border-muted hover:border-primary/50 bg-muted/20 hover:bg-muted/40 cursor-pointer flex flex-col items-center justify-center gap-3 transition-all group"
-                  >
-                    <input
-                      id="ad-image-upload"
-                      type="file"
-                      className="hidden"
-                      accept="image/*"
-                      onChange={handleFileChange}
-                      disabled={uploading}
-                    />
-                    <div className="h-10 w-10 rounded-full bg-background shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <Plus className="h-5 w-5 text-primary" />
+                      {!config.paid_ad_video_status && (
+                        <div className="absolute top-2 right-2 bg-primary text-primary-foreground text-[10px] px-2 py-0.5 rounded-full font-medium shadow-sm flex items-center gap-1">
+                          <Check className="w-3 h-3" /> Active
+                        </div>
+                      )}
                     </div>
-                    <div className="text-center">
-                      <span className="text-sm font-medium text-foreground/80">
-                        Add Image
-                      </span>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">
-                        1200x600px recommended
-                      </p>
-                    </div>
-                  </Label>
+                  ) : (
+                    <Label
+                      htmlFor="ad-image-upload"
+                      className="aspect-video rounded-xl border-2 border-dashed border-muted hover:border-primary/50 bg-muted/20 hover:bg-muted/40 cursor-pointer flex flex-col items-center justify-center gap-3 transition-all group"
+                    >
+                      <input
+                        id="ad-image-upload"
+                        type="file"
+                        className="hidden"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        disabled={uploading}
+                      />
+                      <div className="h-10 w-10 rounded-full bg-background shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <Plus className="h-5 w-5 text-primary" />
+                      </div>
+                      <div className="text-center">
+                        <span className="text-sm font-medium text-foreground/80">
+                          Add Image
+                        </span>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">
+                          1200x600px recommended
+                        </p>
+                      </div>
+                    </Label>
+                  )}
                 </div>
               </TabsContent>
 
               {/* Video Tab */}
               <TabsContent value="video" className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {pendingFile?.type === "video" && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {pendingFile?.type === "video" ? (
                     <div
                       className="relative aspect-video rounded-xl overflow-hidden border-2 border-primary/50 bg-background shadow-md group cursor-zoom-in"
                       onClick={() =>
@@ -470,88 +485,65 @@ export default function PaidAdsSettings({ config, setConfig, merchantId }) {
                         Pending
                       </div>
                     </div>
-                  )}
-                  {config.paid_ad_videos &&
-                    config.paid_ad_videos.map((vidUrl, index) => (
-                      <div
-                        key={index}
-                        className="relative aspect-video rounded-xl overflow-hidden border bg-background group shadow-sm"
-                      >
-                        <video
-                          src={getImageUrl(vidUrl)}
-                          className="w-full h-full object-cover opacity-80"
-                          muted
-                        />
-                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                          <Play className="w-8 h-8 text-white/80 fill-white" />
-                        </div>
-
-                        <div
-                          className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 pointer-events-auto cursor-zoom-in"
-                          onClick={() => handlePreview("video", vidUrl)}
-                        >
-                          {config.paid_ad_video !== vidUrl && (
-                            <Button
-                              variant="secondary"
-                              size="sm"
-                              className="h-8 text-xs"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setConfig({
-                                  ...config,
-                                  paid_ad_video: vidUrl,
-                                  paid_ad_video_status: true,
-                                });
-                              }}
-                            >
-                              Set Active
-                            </Button>
-                          )}
-                          <Button
-                            variant="destructive"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteVideo(index);
-                            }}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                        {config.paid_ad_video === vidUrl &&
-                          config.paid_ad_video_status && (
-                            <div className="absolute top-2 right-2 bg-primary text-primary-foreground text-[10px] px-2 py-0.5 rounded-full font-medium shadow-sm flex items-center gap-1">
-                              <Check className="w-3 h-3" /> Active
-                            </div>
-                          )}
+                  ) : config.paid_ad_video ? (
+                    <div className="relative aspect-video rounded-xl overflow-hidden border bg-background group shadow-sm">
+                      <video
+                        src={getImageUrl(config.paid_ad_video)}
+                        className="w-full h-full object-cover opacity-80"
+                        muted
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <Play className="w-8 h-8 text-white/80 fill-white" />
                       </div>
-                    ))}
 
-                  <Label
-                    htmlFor="ad-video-upload"
-                    className="aspect-video rounded-xl border-2 border-dashed border-muted hover:border-primary/50 bg-muted/20 hover:bg-muted/40 cursor-pointer flex flex-col items-center justify-center gap-3 transition-all group"
-                  >
-                    <input
-                      id="ad-video-upload"
-                      type="file"
-                      className="hidden"
-                      accept="video/*"
-                      onChange={handleVideoUpload}
-                      disabled={uploading}
-                    />
-                    <div className="h-10 w-10 rounded-full bg-background shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <Plus className="h-5 w-5 text-primary" />
+                      <div
+                        className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 pointer-events-auto cursor-zoom-in"
+                        onClick={() => handlePreview("video", config.paid_ad_video)}
+                      >
+                        <Button
+                          variant="destructive"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteVideo();
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      {config.paid_ad_video_status && (
+                        <div className="absolute top-2 right-2 bg-primary text-primary-foreground text-[10px] px-2 py-0.5 rounded-full font-medium shadow-sm flex items-center gap-1">
+                          <Check className="w-3 h-3" /> Active
+                        </div>
+                      )}
                     </div>
-                    <div className="text-center">
-                      <span className="text-sm font-medium text-foreground/80">
-                        Add Video
-                      </span>
-                      <p className="text-[10px] text-muted-foreground mt-0.5">
-                        MP4, WebM (Max 50MB)
-                      </p>
-                    </div>
-                  </Label>
+                  ) : (
+                    <Label
+                      htmlFor="ad-video-upload"
+                      className="aspect-video rounded-xl border-2 border-dashed border-muted hover:border-primary/50 bg-muted/20 hover:bg-muted/40 cursor-pointer flex flex-col items-center justify-center gap-3 transition-all group"
+                    >
+                      <input
+                        id="ad-video-upload"
+                        type="file"
+                        className="hidden"
+                        accept="video/*"
+                        onChange={handleVideoUpload}
+                        disabled={uploading}
+                      />
+                      <div className="h-10 w-10 rounded-full bg-background shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <Plus className="h-5 w-5 text-primary" />
+                      </div>
+                      <div className="text-center">
+                        <span className="text-sm font-medium text-foreground/80">
+                          Add Video
+                        </span>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">
+                          MP4, WebM (Max 50MB)
+                        </p>
+                      </div>
+                    </Label>
+                  )}
                 </div>
               </TabsContent>
             </Tabs>

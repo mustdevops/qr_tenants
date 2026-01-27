@@ -46,6 +46,9 @@ export default function MerchantSettings() {
 
   const { data: session } = useSession();
   const merchantId = session?.user?.merchantId;
+  const subscriptionType =
+    session?.user?.subscriptionType?.toString?.().toLowerCase() || "temporary";
+  const isAnnual = subscriptionType === "annual";
 
   const fetchPresetReviews = useCallback(async () => {
     setLoadingPresets(true);
@@ -311,12 +314,14 @@ export default function MerchantSettings() {
             loadingBatches={loadingBatches}
           />
 
-          <BirthdayRewardsSettings
-            config={config}
-            setConfig={setConfig}
-            couponBatches={couponBatches}
-            loadingBatches={loadingBatches}
-          />
+          {isAnnual && (
+            <BirthdayRewardsSettings
+              config={config}
+              setConfig={setConfig}
+              couponBatches={couponBatches}
+              loadingBatches={loadingBatches}
+            />
+          )}
         </div>
       </div>
 

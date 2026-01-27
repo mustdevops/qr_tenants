@@ -108,7 +108,7 @@ export default function AgentLandingPage() {
     } catch (err) {
       console.warn("Failed to load paid ads", err);
     }
-  }, [agentId, locale]);
+  }, [agentId]);
 
   // Fetch Merchants with Pagination
   const fetchMerchants = useCallback(
@@ -267,9 +267,7 @@ export default function AgentLandingPage() {
 
   // Handlers
   const handleGetCoupon = (merchant, batch) => {
-    const message = `Hi ${merchant.name}, I would like to claim the deal: ${batch.batch_name}`;
-    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, "_blank");
+    router.push(`/customer/review?mid=${merchant.id}&batchId=${batch.id}`);
   };
 
   const handleLoadMore = () => {

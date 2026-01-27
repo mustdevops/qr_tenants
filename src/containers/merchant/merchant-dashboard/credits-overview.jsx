@@ -19,6 +19,7 @@ import {
   UserPlus,
   Gift,
   MessageSquare,
+  Ticket,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -67,36 +68,47 @@ function CouponPieChart({ couponStats }) {
   return (
     <div className="flex flex-col items-center gap-4">
       <svg width="120" height="120" viewBox="0 0 100 100">
-        {data.map((item, index) => {
-          if (item.value === 0) return null;
-          const percentage = total > 0 ? (item.value / total) * 100 : 0;
-          const angle = (percentage / 100) * Math.PI * 2;
-          const endAngle = startAngle + angle;
+        {data.length === 1 ? (
+          <circle
+            cx={centerX}
+            cy={centerY}
+            r={radius}
+            fill={data[0].color}
+            stroke="#fff"
+            strokeWidth="2"
+          />
+        ) : (
+          data.map((item, index) => {
+            if (item.value === 0) return null;
+            const percentage = total > 0 ? (item.value / total) * 100 : 0;
+            const angle = (percentage / 100) * Math.PI * 2;
+            const endAngle = startAngle + angle;
 
-          // Calculate the path for the pie slice
-          const x1 = centerX + radius * Math.cos(startAngle);
-          const y1 = centerY + radius * Math.sin(startAngle);
-          const x2 = centerX + radius * Math.cos(endAngle);
-          const y2 = centerY + radius * Math.sin(endAngle);
+            // Calculate the path for the pie slice
+            const x1 = centerX + radius * Math.cos(startAngle);
+            const y1 = centerY + radius * Math.sin(startAngle);
+            const x2 = centerX + radius * Math.cos(endAngle);
+            const y2 = centerY + radius * Math.sin(endAngle);
 
-          // Determine if the arc is large or small
-          const largeArcFlag = angle > Math.PI ? "1" : "0";
+            // Determine if the arc is large or small
+            const largeArcFlag = angle > Math.PI ? "1" : "0";
 
-          // Create the path data
-          const pathData = `M ${centerX} ${centerY} L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2} Z`;
+            // Create the path data
+            const pathData = `M ${centerX} ${centerY} L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2} Z`;
 
-          startAngle += angle;
+            startAngle += angle;
 
-          return (
-            <path
-              key={index}
-              d={pathData}
-              fill={item.color}
-              stroke="#fff"
-              strokeWidth="2"
-            />
-          );
-        })}
+            return (
+              <path
+                key={index}
+                d={pathData}
+                fill={item.color}
+                stroke="#fff"
+                strokeWidth="2"
+              />
+            );
+          })
+        )}
       </svg>
 
       {/* Legend */}
@@ -121,6 +133,150 @@ function CouponPieChart({ couponStats }) {
   );
 }
 
+const platformColors = {
+  google: "bg-blue-500",
+  facebook: "bg-blue-700",
+  instagram: "bg-pink-600",
+  xiaohongshu: "bg-red-500",
+};
+
+function FeedbackBreakdown({ stats }) {
+  const byPlatform = stats?.byPlatform || {};
+  const total = stats?.totalReviews || 0;
+
+  if (total === 0)
+    return (
+      <p className="text-xs text-muted-foreground">No feedback data yet</p>
+    );
+
+  return (
+    <div className="space-y-3 mt-4">
+      {Object.entries(byPlatform)
+        .filter(([_, value]) => value > 0)
+        .map(([platform, value]) => {
+          const percentage = (value / total) * 100;
+          return (
+            <div key={platform} className="space-y-1">
+              <div className="flex justify-between text-[10px] uppercase font-bold text-muted-foreground">
+                <span>{platform}</span>
+                <span>
+                  {value} ({Math.round(percentage)}%)
+                </span>
+              </div>
+              <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+                <div
+                  className={cn(
+                    "h-full",
+                    platformColors[platform] || "bg-primary",
+                  )}
+                  style={{ width: `${percentage}%` }}
+                />
+              </div>
+            </div>
+          );
+        })}
+    </div>
+  );
+}
+
+function TopCustomersList({ customers }) {
+  if (!customers || customers.length === 0) {
+    return (
+      <p className="text-xs text-muted-foreground">No customer data yet</p>
+    );
+  }
+
+  return (
+    <div className="space-y-4 mt-4">
+      {customers.map((customer, i) => (
+        <div
+          key={customer.customerId || i}
+          className="flex items-center justify-between"
+        >
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">
+              {customer.customerName?.charAt(0) || "C"}
+            </div>
+            <div>
+              <p className="text-sm font-medium leading-none">
+                {customer.customerName}
+              </p>
+              <p className="text-[10px] text-muted-foreground mt-1">
+                {customer.totalVisits} visits
+              </p>
+            </div>
+          </div>
+          <div className="text-right">
+            <p className="text-xs font-bold">
+              {customer.totalCouponsRedeemed || 0}
+            </p>
+            <p className="text-[8px] text-muted-foreground uppercase">
+              Redeemed
+            </p>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function WhatsAppBreakdown({ stats }) {
+  const ui = stats?.uiMessages || {};
+  const bi = stats?.biMessages || {};
+
+  const uiItems = [
+    { label: "Feedback Coupons", value: ui.feedbackCoupons ?? 0 },
+    { label: "Lucky Draw Wins", value: ui.luckyDrawWins ?? 0 },
+    { label: "Homepage Coupons", value: ui.homepageCoupons ?? 0 },
+  ].filter((i) => i.value > 0);
+
+  const biItems = [
+    { label: "Birthday Campaigns", value: bi.birthdayCampaigns ?? 0 },
+    { label: "Inactive Recalls", value: bi.inactiveRecalls ?? 0 },
+    { label: "Festival Campaigns", value: bi.festivalCampaigns ?? 0 },
+  ].filter((i) => i.value > 0);
+
+  return (
+    <div className="space-y-4 mt-4">
+      {/* UI Section */}
+      <div>
+        <div className="flex justify-between items-center mb-1">
+          <span className="text-[10px] font-bold uppercase text-violet-600">UI Messages (User-Initiated)</span>
+          <span className="text-xs font-bold">{ui.total ?? 0}</span>
+        </div>
+        <div className="space-y-2">
+          {uiItems.length > 0 ? uiItems.map((item, i) => (
+            <div key={i} className="flex justify-between text-[10px]">
+              <span className="text-muted-foreground">{item.label}</span>
+              <span className="font-medium">{item.value}</span>
+            </div>
+          )) : (
+            <p className="text-[10px] text-muted-foreground italic">No UI activity yet</p>
+          )}
+        </div>
+      </div>
+
+      {/* BI Section */}
+      <div className="pt-2 border-t border-muted">
+        <div className="flex justify-between items-center mb-1">
+          <span className="text-[10px] font-bold uppercase text-amber-600">BI Messages (Business-Initiated)</span>
+          <span className="text-xs font-bold">{bi.total ?? 0}</span>
+        </div>
+        <div className="space-y-2">
+          {biItems.length > 0 ? biItems.map((item, i) => (
+            <div key={i} className="flex justify-between text-[10px]">
+              <span className="text-muted-foreground">{item.label}</span>
+              <span className="font-medium">{item.value}</span>
+            </div>
+          )) : (
+            <p className="text-[10px] text-muted-foreground italic">No BI campaigns yet</p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function CreditsOverview({ data, dashboardData, loading }) {
   const { data: session } = useSession();
 
@@ -140,6 +296,8 @@ export function CreditsOverview({ data, dashboardData, loading }) {
   const normalized =
     dashboardData?.data?.overview?.data ||
     dashboardData?.overview?.data ||
+    dashboardData?.data?.overview ||
+    dashboardData?.overview ||
     dashboardData?.data ||
     dashboardData ||
     {};
@@ -169,6 +327,15 @@ export function CreditsOverview({ data, dashboardData, loading }) {
       iconBg: "bg-blue-100 dark:bg-blue-900",
     },
     {
+      label: "Issued",
+      value: overview.totalCouponsIssued ?? 0,
+      icon: Ticket,
+      color: "text-amber-600 dark:text-amber-400",
+      bgClass:
+        "from-amber-50 to-white dark:from-amber-950/50 dark:to-background border-amber-200 dark:border-amber-900",
+      iconBg: "bg-amber-100 dark:bg-amber-900",
+    },
+    {
       label: "Redeemed",
       value: overview.totalCouponsRedeemed ?? 0,
       icon: CheckCircle,
@@ -187,29 +354,16 @@ export function CreditsOverview({ data, dashboardData, loading }) {
         "from-purple-50 to-white dark:from-purple-950/50 dark:to-background border-purple-200 dark:border-purple-900",
       iconBg: "bg-purple-100 dark:bg-purple-900",
     },
-    // Show UI / BI breakdown: always show UI; hide BI for temporary merchants
     {
-      label: "UI Messages",
-      value: whatsappStats.uiMessages?.total ?? 0,
+      label: "Credits Used",
+      value: whatsappStats.creditsUsed ?? 0,
       icon: MessageSquare,
       color: "text-violet-600 dark:text-violet-400",
       bgClass:
         "from-violet-50 to-white dark:from-violet-950/50 dark:to-background border-violet-200 dark:border-violet-900",
       iconBg: "bg-violet-100 dark:bg-violet-900",
+      footer: `Est. Cost: $${(whatsappStats.estimatedCost || 0).toFixed(2)}`,
     },
-    ...(!isTemporary
-      ? [
-          {
-            label: "BI Messages",
-            value: whatsappStats.biMessages?.total ?? 0,
-            icon: Trophy,
-            color: "text-amber-600 dark:text-amber-400",
-            bgClass:
-              "from-amber-50 to-white dark:from-amber-950/50 dark:to-background border-amber-200 dark:border-amber-900",
-            iconBg: "bg-amber-100 dark:bg-amber-900",
-          },
-        ]
-      : []),
     {
       label: "Total Customers",
       value: overview.totalCustomers ?? 0,
@@ -231,7 +385,7 @@ export function CreditsOverview({ data, dashboardData, loading }) {
             <Card
               key={index}
               className={cn(
-                "overflow-hidden rounded-xl shadow-lg",
+                "overflow-hidden rounded-xl shadow-lg border-2 transition-all hover:scale-[1.02]",
                 item.bgClass,
               )}
             >
@@ -244,6 +398,11 @@ export function CreditsOverview({ data, dashboardData, loading }) {
                     <h3 className="text-3xl sm:text-4xl font-extrabold mt-2">
                       {(item.value ?? 0).toLocaleString()}
                     </h3>
+                    {item.footer && (
+                      <p className="text-[10px] mt-2 font-medium opacity-70 italic">
+                        {item.footer}
+                      </p>
+                    )}
                   </div>
                   <div
                     className={cn("p-3 rounded-full shadow-md", item.iconBg)}
@@ -257,69 +416,108 @@ export function CreditsOverview({ data, dashboardData, loading }) {
         })}
       </div>
 
-      <div className="grid gap-6 md:grid-cols-4 lg:grid-cols-5">
+      <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         {/* Coupon Status Chart */}
-        <Card className="md:col-span-2 lg:col-span-2 border-muted/60">
+        <Card className="xl:col-span-1 border-muted/60 shadow-sm">
           <CardHeader>
             <CardTitle className="text-lg">Coupon Status</CardTitle>
-            <CardDescription>Distribution of all coupons</CardDescription>
+            <CardDescription>Redemption Distribution</CardDescription>
           </CardHeader>
           <CardContent>
             <CouponPieChart couponStats={couponStats} />
           </CardContent>
         </Card>
 
-        {/* Returning Customers */}
-        <Card className="md:col-span-1 border-muted/60">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <UserPlus className="w-4 h-4 text-purple-500" /> Returning
-              Customers
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="h-full flex flex-col justify-center pb-8">
-            <div className="text-3xl font-bold">
-              {customerStats.returningCustomersThisMonth ?? 0}
+        {/* WhatsApp Breakdown */}
+        <Card className="xl:col-span-1 border-muted/60 shadow-sm">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-lg">WhatsApp</CardTitle>
+                <CardDescription>UI & BI Breakdown</CardDescription>
+              </div>
+              <MessageCircle className="w-5 h-5 text-purple-500" />
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Users returning this month
-            </p>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-extrabold">
+              {whatsappStats.totalMessagesSent ?? 0}
+            </div>
+            <WhatsAppBreakdown stats={whatsappStats} />
           </CardContent>
         </Card>
 
-        {/* Lucky Draw Participation */}
-        <Card className="md:col-span-1 border-muted/60">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <Trophy className="w-4 h-4 text-yellow-500" /> Lucky Draw
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="h-full flex flex-col justify-center pb-8">
-            <div className="text-3xl font-bold">
-              {overview.luckyDrawParticipation ?? 0}
+        {/* Feedback Breakdown */}
+        <Card className="xl:col-span-1 border-muted/60 shadow-sm">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-lg">Feedbacks</CardTitle>
+                <CardDescription>Platform Distribution</CardDescription>
+              </div>
+              <MessageSquare className="w-5 h-5 text-blue-500" />
             </div>
-            <p className="text-xs text-muted-foreground mt-1">Total Spins</p>
-          </CardContent>
-        </Card>
-
-        {/* Total Feedbacks */}
-        <Card className="md:col-span-1 border-muted/60">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <MessageSquare className="w-4 h-4 text-blue-500" /> Total
-              Feedbacks
-            </CardTitle>
           </CardHeader>
-          <CardContent className="h-full flex flex-col justify-center pb-8">
-            <div className="text-3xl font-bold">
+          <CardContent>
+            <div className="text-3xl font-extrabold">
               {overview.totalFeedbacks ?? 0}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Customers feedback received
-            </p>
+            <FeedbackBreakdown stats={feedbackStats} />
           </CardContent>
         </Card>
+
+        {/* Top Customers */}
+        <Card className="xl:col-span-1 border-muted/60 shadow-sm">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-lg">Top Customers</CardTitle>
+                <CardDescription>Most active users</CardDescription>
+              </div>
+              <Users className="w-5 h-5 text-orange-500" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <TopCustomersList customers={customerStats.topCustomers} />
+          </CardContent>
+        </Card>
+
+        {/* Lucky Draw & Returning */}
+        <div className="xl:col-span-1 space-y-6">
+          <Card className="border-muted/60 shadow-sm">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                <UserPlus className="w-4 h-4 text-purple-500" /> Retention
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {customerStats.returningCustomersThisMonth ?? 0}
+              </div>
+              <p className="text-[10px] text-muted-foreground mt-1 uppercase font-semibold">
+                Returning this month
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-muted/60 shadow-sm">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                <Trophy className="w-4 h-4 text-yellow-500" /> Games
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {overview.luckyDrawParticipation ?? 0}
+              </div>
+              <p className="text-[10px] text-muted-foreground mt-1 uppercase font-semibold">
+                Lucky Draw Spins
+              </p>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
 }
+

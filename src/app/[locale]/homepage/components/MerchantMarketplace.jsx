@@ -167,6 +167,7 @@ export function MarketplaceFilters({
   setSelectedRegion,
   categories,
   cities,
+  handleGetCoupon,
 }) {
   return (
     <div className="sticky top-20 z-40 mb-8">
@@ -505,7 +506,7 @@ export function MerchantDetail({ activeMerchant, handleGetCoupon }) {
                     <Button
                       size="sm"
                       className="w-full text-xs font-bold rounded-lg h-8 shadow-sm"
-                      onClick={() => router.push("/customer/review")}
+                      onClick={() => handleGetCoupon(activeMerchant, batch)}
                     >
                       Get Coupon
                     </Button>

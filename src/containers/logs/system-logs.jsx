@@ -68,6 +68,12 @@ const LOG_TYPES = {
       category: "whatsapp_ui",
       action: "ui_feedback_sent",
     },
+    {
+      label: "WhatsApp BI Feedback",
+      value: "whatsapp_bi_feedback_bi",
+      category: "whatsapp_bi",
+      action: "bi_feedback_sent",
+    },
   ],
   merchant: [
     { label: "Store Activity", value: "all" },

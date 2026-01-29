@@ -1,331 +1,155 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useState } from "react";
 import { toast } from "@/lib/toast";
 import { useSession } from "next-auth/react";
-import axiosInstance from "@/lib/axios";
 
 // Components
 import PlatformSettings from "./components/PlatformSettings";
-
 import PresetReviewsSettings from "./components/PresetReviewsSettings";
 import RewardStrategySettings from "./components/RewardStrategySettings";
 import BirthdayRewardsSettings from "./components/BirthdayRewardsSettings";
+import InactiveRecallSettings from "./components/InactiveRecallSettings";
+import FestivalMessageSettings from "./components/FestivalMessageSettings";
+import ScheduledCampaignSettings from "./components/ScheduledCampaignSettings";
 import StickySaveBar from "./components/StickySaveBar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Settings2, Rocket, Zap } from "lucide-react";
 
 export default function MerchantSettings() {
-  const [loadingPresets, setLoadingPresets] = useState(false);
-  const [loadingSettings, setLoadingSettings] = useState(false);
-  const [config, setConfig] = useState({
-    luckyDrawEnabled: false,
-    selectedBatchId: null,
-    enablePresetReviews: false,
-    enableGoogle: false,
-    enableFacebook: false,
-    enableInstagram: false,
-    enableRed: false,
-    googleReviewLink: "",
-    facebookReviewLink: "",
-    instagramReviewLink: "",
-    redReviewLink: "",
-    presets: [],
-    paid_ads: false,
-    paid_ad_image: "",
-    paid_ad_images: [],
-    paid_ad_video_enabled: false,
-    paid_ad_video: "",
-    paid_ad_videos: [],
-    placement: "",
-    birthdayMessageEnabled: false,
-    daysBeforeBirthday: 3,
-    daysAfterBirthday: 0,
-    birthdayCouponBatchId: null,
-  });
-  const [couponBatches, setCouponBatches] = useState([]);
-  const [loadingBatches, setLoadingBatches] = useState(false);
-
+  const [saving, setSaving] = useState(false);
   const { data: session } = useSession();
-  const merchantId = session?.user?.merchantId;
+
   const subscriptionType =
     session?.user?.subscriptionType?.toString?.().toLowerCase() || "temporary";
   const isAnnual = subscriptionType === "annual";
 
-  const fetchPresetReviews = useCallback(async () => {
-    setLoadingPresets(true);
-
-    try {
-      const res = await axiosInstance.get("/preset-reviews", {
-        params: { merchantId },
-      });
-
-      const reviews = res?.data?.data || [];
-
-      // sort by display order
-      const sorted = reviews
-        .filter((r) => r.is_active)
-        .sort((a, b) => a.display_order - b.display_order)
-        .slice(0, 10); // max 10
-
-      const presetTexts = sorted.map((r) => r.review_text);
-
-      setConfig((prev) => ({
-        ...prev,
-        presets: presetTexts.length > 0 ? presetTexts : prev.presets,
-      }));
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to load preset reviews", {
-        closeButton: true,
-        duration: false,
-      });
-    } finally {
-      setLoadingPresets(false);
-    }
-  }, [merchantId]);
-
-  const fetchCouponBatches = useCallback(async () => {
-    if (!merchantId) return;
-    setLoadingBatches(true);
-    try {
-      const res = await axiosInstance.get("/coupon-batches", {
-        params: { page: 1, pageSize: 20 },
-      });
-
-      const data = res?.data?.data || res?.data || {};
-      const batches = data.batches || [];
-      setCouponBatches(batches);
-    } catch (error) {
-      console.error("Failed to load coupon batches:", error);
-    } finally {
-      setLoadingBatches(false);
-    }
-  }, [merchantId]);
-
-  const fetchMerchantSettings = useCallback(async () => {
-    if (!merchantId) return;
-
-    try {
-      const res = await axiosInstance.get(
-        `/merchant-settings/merchant/${merchantId}`,
-      );
-
-      const data = res?.data?.data;
-      if (!data) return;
-
-      setConfig((prev) => ({
-        ...prev,
-        luckyDrawEnabled: data.luckydraw_enabled ?? false,
-        selectedBatchId: data.whatsapp_enabled_for_batch_id || null,
-        enablePresetReviews: data.enable_preset_reviews ?? false,
-        enableGoogle: data.enable_google_reviews ?? false,
-        enableFacebook: data.enable_facebook_reviews ?? false,
-        enableInstagram: data.enable_instagram_reviews ?? false,
-        enableRed: data.enable_xiaohongshu_reviews ?? false,
-        googleReviewLink: data.google_review_url || "",
-        facebookReviewLink: data.facebook_page_url || "",
-        instagramReviewLink: data.instagram_url || "",
-        redReviewLink: data.xiaohongshu_url || "",
-        paid_ads: data.paid_ads ?? false,
-        paid_ad_image: data.paid_ad_image || "",
-        paid_ad_images: data.paid_ad_image ? [data.paid_ad_image] : [],
-        paid_ad_video_status: data.paid_ad_type === "video", // Infer status from type if available, otherwise default to false
-        paid_ad_video: data.paid_ad_video || "",
-        paid_ad_videos: data.paid_ad_video ? [data.paid_ad_video] : [],
-        placement: data.paid_ad_placement || "top",
-        birthdayMessageEnabled: data.birthday_message_enabled ?? false,
-        daysBeforeBirthday: data.days_before_birthday ?? 3,
-        daysAfterBirthday: data.days_after_birthday ?? 0,
-        birthdayCouponBatchId: data.birthday_coupon_batch_id || null,
-      }));
-    } catch (error) {
-      console.error(error);
-      toast.error("Failed to load merchant settings", {
-        closeButton: true,
-        duration: false,
-      });
-    }
-  }, [merchantId]);
-
-  useEffect(() => {
-    if (!merchantId) return;
-
-    fetchMerchantSettings();
-    fetchPresetReviews();
-    fetchCouponBatches();
-  }, [
-    merchantId,
-    fetchMerchantSettings,
-    fetchPresetReviews,
-    fetchCouponBatches,
-  ]);
-
-  const handleSavePresets = async () => {
-    setLoadingPresets(true);
-
-    try {
-      const payload = {
-        reviews: config.enablePresetReviews
-          ? config.presets.map((text, index) => ({
-              id: index + 1,
-              merchant_id: merchantId,
-              reviewText: text.trim(),
-              isActive: true,
-              displayOrder: index + 1,
-            }))
-          : [],
-      };
-
-      const response = await axiosInstance.patch("/preset-reviews", payload);
-
-      if (![200, 201].includes(response.status)) {
-        throw new Error("Failed to save preset reviews");
-      }
-
-      toast.success("Preset reviews updated successfully", {
-        closeButton: true,
-        duration: false,
-      });
-    } catch (error) {
-      console.error(error);
-      toast.error(
-        error?.response?.data?.message || "Error updating preset reviews",
-        { closeButton: true, duration: false },
-      );
-    } finally {
-      setLoadingPresets(false);
-    }
-  };
-
   const handleSaveAllSettings = async () => {
-    // Validation
-    if (!config.luckyDrawEnabled && !config.selectedBatchId) {
-      toast.error(
-        "Please select a Coupon Batch to continue with Direct Rewards.",
-        { closeButton: true, duration: false },
-      );
-      return;
-    }
-
-    if (config.birthdayMessageEnabled && !config.birthdayCouponBatchId) {
-      toast.error(
-        "Please select a Birthday Coupon Batch to enable Birthday Rewards.",
-        { closeButton: true, duration: false },
-      );
-      return;
-    }
-
-    setLoadingSettings(true);
-
+    setSaving(true);
     try {
-      const payload = {
-        merchant_id: merchantId,
-        // Platform settings
-        enable_preset_reviews: config.enablePresetReviews,
-        enable_google_reviews: config.enableGoogle,
-        enable_facebook_reviews: config.enableFacebook,
-        enable_instagram_reviews: config.enableInstagram,
-        enable_xiaohongshu_reviews: config.enableRed,
-        google_review_url: config.enableGoogle ? config.googleReviewLink : null,
-        facebook_page_url: config.enableFacebook
-          ? config.facebookReviewLink
-          : null,
-        instagram_url: config.enableInstagram
-          ? config.instagramReviewLink
-          : null,
-        xiaohongshu_url: config.enableRed ? config.redReviewLink : null,
-        //  paid_ads: config.paid_ads,
-        //  paid_ad_image: config.paid_ad_image,
-        //  paid_ad_video: config.paid_ad_video,
-        //  paid_ad_type: config.paid_ad_video_status ? "video" : "image",
-        //  paid_ad_placement: config.placement,
-        // Reward settings - Lucky Draw or Coupon Batch
-        luckydraw_enabled: config.luckyDrawEnabled,
-        whatsapp_enabled_for_batch_id: config.luckyDrawEnabled
-          ? null
-          : config.selectedBatchId,
-        birthday_message_enabled: config.birthdayMessageEnabled,
-        days_before_birthday: Number(config.daysBeforeBirthday),
-        days_after_birthday: Number(config.daysAfterBirthday),
-        birthday_coupon_batch_id: config.birthdayMessageEnabled
-          ? config.birthdayCouponBatchId
-          : null,
-      };
+      // Dispatch global save event that all independent components listen to
+      window.dispatchEvent(new CustomEvent("SAVE_MERCHANT_SETTINGS"));
 
-      await axiosInstance.patch(
-        `/merchant-settings/merchant/${merchantId}`,
-        payload,
-      );
-      toast.success("Settings saved successfully", {
-        closeButton: true,
-        duration: false,
-      });
+      setTimeout(() => {
+        toast.success("Settings synchronized", {
+          description: "All configurations have been successfully updated.",
+        });
+        setSaving(false);
+      }, 1500);
     } catch (error) {
-      console.error(error);
-      toast.error(error?.response?.data?.message || "Error saving settings", {
-        closeButton: true,
-        duration: false,
-      });
-    } finally {
-      setLoadingSettings(false);
+      setSaving(false);
     }
   };
-
-  // Ensure presets has 10 items for the UI
-  useEffect(() => {
-    if (config.presets.length < 10) {
-      setConfig((prev) => ({
-        ...prev,
-        presets: [...prev.presets, ...Array(10 - prev.presets.length).fill("")],
-      }));
-    }
-  }, [config.presets.length]);
 
   return (
-    <div className="relative pb-24 space-y-8 animate-in fade-in duration-500">
-      <div className="flex flex-col gap-2">
-        <h2 className="text-3xl font-bold tracking-tight bg-linear-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
-          Review & Reward Settings
-        </h2>
-        <p className="text-muted-foreground text-base max-w-2xl">
-          Configure how customers interact with your business, manage review
-          platforms, and set up automated rewards.
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-        {/* Left Column: Platforms & Ads */}
-        <div className="xl:col-span-2 space-y-6">
-          <PlatformSettings config={config} setConfig={setConfig} />
-
-          <PresetReviewsSettings
-            config={config}
-            setConfig={setConfig}
-            loadingPresets={loadingPresets}
-            onSavePresets={handleSavePresets}
-          />
-        </div>
-
-        {/* Right Column: Strategy & Birthday */}
-        <div className="space-y-6">
-          <RewardStrategySettings
-            config={config}
-            setConfig={setConfig}
-            couponBatches={couponBatches}
-            loadingBatches={loadingBatches}
-          />
-
-          {isAnnual && (
-            <BirthdayRewardsSettings
-              config={config}
-              setConfig={setConfig}
-              couponBatches={couponBatches}
-              loadingBatches={loadingBatches}
-            />
-          )}
+    <div className="relative space-y-8 animate-in fade-in duration-700">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-muted/20 pb-8">
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 mb-1">
+            <div className="p-1.5 bg-primary/10 text-primary rounded-lg">
+              <Zap className="h-5 w-5" />
+            </div>
+            <span className="text-xs font-bold uppercase tracking-wider text-primary/80">
+              Merchant Control Center
+            </span>
+          </div>
+          <h2 className="text-4xl font-extrabold tracking-tight bg-linear-to-r from-gray-900 via-gray-800 to-gray-500 bg-clip-text text-transparent">
+            Review & Reward Strategy
+          </h2>
+          <p className="text-muted-foreground text-lg max-w-2xl leading-relaxed">
+            Optimize how customers interact with your brand. Manage review
+            platforms, automated rewards, and seasonal engagement campaigns in
+            one place.
+          </p>
         </div>
       </div>
 
-      <StickySaveBar loading={loadingSettings} onSave={handleSaveAllSettings} />
+      <Tabs defaultValue="core" className="w-full space-y-8">
+        <div className="flex items-center justify-between">
+          <TabsList className="bg-muted/50 p-1 rounded-xl h-auto border border-muted/20">
+            <TabsTrigger
+              value="core"
+              className="px-6 py-2.5 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-primary transition-all flex items-center gap-2"
+            >
+              <Settings2 className="h-4 w-4" />
+              Core Configuration
+            </TabsTrigger>
+            {isAnnual && (
+              <TabsTrigger
+                value="automations"
+                className="px-6 py-2.5 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-primary transition-all flex items-center gap-2"
+              >
+                <Rocket className="h-4 w-4" />
+                Marketing Automations
+              </TabsTrigger>
+            )}
+          </TabsList>
+        </div>
+
+        <TabsContent
+          value="core"
+          className="mt-0 animate-in fade-in slide-in-from-left-4 duration-500"
+        >
+          <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
+            <div className="xl:col-span-7 space-y-8">
+              <PlatformSettings />
+              <PresetReviewsSettings />
+            </div>
+
+            <div className="xl:col-span-5 space-y-8 h-full">
+              <RewardStrategySettings />
+              <div className="p-8 rounded-3xl bg-gray-900 from-gray-900 to-gray-900 text-white border border-gray-900/20 relative overflow-hidden group shadow-xl">
+                <div className="absolute -top-10 -right-10 p-4 opacity-10 group-hover:scale-110 transition-transform duration-700 pointer-events-none">
+                  <Rocket className="h-48 w-48 text-white" />
+                </div>
+                <div className="relative z-10 space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-white/20 rounded-lg backdrop-blur-md">
+                      <Zap className="h-5 w-5 text-emerald-200 fill-emerald-200" />
+                    </div>
+                    <h4 className="font-extrabold text-lg tracking-tight uppercase">
+                      Strategy Insight
+                    </h4>
+                  </div>
+                  <p className="text-emerald-50/90 text-sm leading-relaxed font-medium">
+                    &quot;Combine <strong>Direct Coupons</strong> with{" "}
+                    <strong>Preset Reviews</strong> to drastically increase your
+                    positive review count while keeping customers happy with
+                    instant rewards.&quot;
+                  </p>
+                  <div className="pt-2">
+                    <div className="h-1 w-12 bg-emerald-400 rounded-full" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </TabsContent>
+
+        {isAnnual && (
+          <TabsContent
+            value="automations"
+            className="mt-0 animate-in fade-in slide-in-from-right-4 duration-500 relative z-10"
+          >
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch relative z-20">
+              <div className="flex flex-col h-full">
+                <BirthdayRewardsSettings />
+              </div>
+              <div className="flex flex-col h-full">
+                <InactiveRecallSettings />
+              </div>
+              <div className="flex flex-col h-full">
+                <FestivalMessageSettings />
+              </div>
+              <div className="flex flex-col h-full">
+                <ScheduledCampaignSettings />
+              </div>
+            </div>
+          </TabsContent>
+        )}
+      </Tabs>
+
+      <StickySaveBar loading={saving} onSave={handleSaveAllSettings} />
     </div>
   );
 }

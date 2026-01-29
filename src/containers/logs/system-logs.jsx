@@ -243,7 +243,7 @@ export default function SystemLogsContainer({
   const columns = getLogColumns();
 
   return (
-    <Card className="w-full shadow-sm border-muted/40">
+    <Card className="w-full shadow-sm border-muted/40 ">
       <CardHeader className="pb-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>

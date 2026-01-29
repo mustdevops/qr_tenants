@@ -4,7 +4,7 @@ import { Save, Loader2 } from "lucide-react";
 
 export default function StickySaveBar({ loading, onSave }) {
   return (
-    <div className=" py-8 border border-muted/20 bg-white shadow-xl shadow-gray-200/50 rounded-2xl flex items-center min-h-20 mb-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className=" py-8 border border-muted/20 bg-white shadow-xl shadow-gray-200/50 rounded-2xl flex items-center min-h-20  animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="max-w-7xl mx-auto w-full px-8 flex items-center justify-between">
         <div className="items-center gap-2.5 text-muted-foreground hidden md:flex">
           <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.3)]" />

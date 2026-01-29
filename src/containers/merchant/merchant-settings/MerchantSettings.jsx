@@ -96,7 +96,7 @@ export default function MerchantSettings() {
               <PresetReviewsSettings />
             </div>
 
-            <div className="xl:col-span-5 space-y-8 h-full">
+            <div className="xl:col-span-5 space-y-0 h-full">
               <RewardStrategySettings />
               <div className="p-8 rounded-3xl bg-gray-900 from-gray-900 to-gray-900 text-white border border-gray-900/20 relative overflow-hidden group shadow-xl">
                 <div className="absolute -top-10 -right-10 p-4 opacity-10 group-hover:scale-110 transition-transform duration-700 pointer-events-none">

@@ -1,120 +1,150 @@
-import React from "react";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { Share2 } from "lucide-react";
+import React, { useState, useEffect, useCallback } from "react";
+import {
+    Card,
+    CardHeader,
+    CardTitle,
+    CardDescription,
+    CardContent,
+} from "@/components/ui/card";
+import { Share2, Globe, Facebook, Instagram, MessageCircle } from "lucide-react";
 import PlatformItem from "./PlatformItem";
+import axiosInstance from "@/lib/axios";
+import { useSession } from "next-auth/react";
 
-export default function PlatformSettings({ config, setConfig }) {
+export default function PlatformSettings() {
+    const { data: session } = useSession();
+    const merchantId = session?.user?.merchantId;
+
+    const [state, setState] = useState({
+        enableGoogle: false,
+        enableFacebook: false,
+        enableInstagram: false,
+        enableRed: false,
+        googleReviewLink: "",
+        facebookReviewLink: "",
+        instagramReviewLink: "",
+        redReviewLink: "",
+    });
+
+    const fetchSettings = useCallback(async () => {
+        if (!merchantId) return;
+        try {
+            const res = await axiosInstance.get(
+                `/merchant-settings/merchant/${merchantId}`,
+            );
+            const data = res?.data?.data;
+            if (data) {
+                setState({
+                    enableGoogle: data.enable_google_reviews ?? false,
+                    enableFacebook: data.enable_facebook_reviews ?? false,
+                    enableInstagram: data.enable_instagram_reviews ?? false,
+                    enableRed: data.enable_xiaohongshu_reviews ?? false,
+                    googleReviewLink: data.google_review_url || "",
+                    facebookReviewLink: data.facebook_page_url || "",
+                    instagramReviewLink: data.instagram_url || "",
+                    redReviewLink: data.xiaohongshu_url || "",
+                });
+            }
+        } catch (error) {
+            console.error("Failed to load platform settings:", error);
+        }
+    }, [merchantId]);
+
+    useEffect(() => {
+        fetchSettings();
+    }, [fetchSettings]);
+
+    const handleSave = useCallback(async () => {
+        if (!merchantId) return;
+        try {
+            const payload = {
+                merchant_id: merchantId,
+                enable_google_reviews: state.enableGoogle,
+                enable_facebook_reviews: state.enableFacebook,
+                enable_instagram_reviews: state.enableInstagram,
+                enable_xiaohongshu_reviews: state.enableRed,
+                google_review_url: state.enableGoogle ? state.googleReviewLink : null,
+                facebook_page_url: state.enableFacebook ? state.facebookReviewLink : null,
+                instagram_url: state.enableInstagram ? state.instagramReviewLink : null,
+                xiaohongshu_url: state.enableRed ? state.redReviewLink : null,
+            };
+            await axiosInstance.patch(
+                `/merchant-settings/merchant/${merchantId}`,
+                payload,
+            );
+        } catch (error) {
+            console.error("Failed to save platform settings:", error);
+            throw error;
+        }
+    }, [merchantId, state]);
+
+    useEffect(() => {
+        window.addEventListener("SAVE_MERCHANT_SETTINGS", handleSave);
+        return () => window.removeEventListener("SAVE_MERCHANT_SETTINGS", handleSave);
+    }, [handleSave]);
+
     return (
-        <Card className="border-muted/40 shadow-sm overflow-hidden bg-linear-to-br from-white to-gray-50/50">
-            <CardHeader className="pb-6 border-b border-muted/20 bg-white/50">
+        <Card className="border-muted/40 shadow-sm overflow-hidden bg-linear-to-br from-white to-gray-50/50 transition-all duration-300 hover:shadow-md">
+            <CardHeader className="pb-6 border-b border-muted/20 bg-blue-50/30">
                 <div className="flex items-center gap-3">
-                    <div className="p-2.5 bg-blue-50 text-blue-600 rounded-xl">
+                    <div className="p-2.5 bg-blue-100 text-blue-700 rounded-xl">
                         <Share2 className="h-5 w-5" />
                     </div>
                     <div>
-                        <CardTitle className="text-lg font-semibold">
-                            Review Platforms
-                        </CardTitle>
+                        <CardTitle className="text-xl font-bold">Review Platforms</CardTitle>
                         <CardDescription>
-                            Connect your social profiles to collect reviews
+                            Connect your social profiles to collect customer feedback
                         </CardDescription>
                     </div>
                 </div>
             </CardHeader>
             <CardContent className="grid gap-6 p-6">
-                {/* Google */}
                 <PlatformItem
-                    icon={
-                        <svg
-                            viewBox="0 0 24 24"
-                            className="w-5 h-5"
-                            xmlns="http://www.w3.org/2000/svg"
-                        >
-                            <path
-                                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                                fill="#4285F4"
-                            />
-                            <path
-                                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                                fill="#34A853"
-                            />
-                            <path
-                                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                                fill="#FBBC05"
-                            />
-                            <path
-                                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                                fill="#EA4335"
-                            />
-                        </svg>
-                    }
-                    label="Google Business"
-                    color="hover:border-blue-200 hover:bg-blue-50/30"
-                    enabled={config.enableGoogle}
-                    onToggle={(c) => setConfig({ ...config, enableGoogle: c })}
-                    link={config.googleReviewLink}
+                    icon={<Globe className="h-4 w-4 text-blue-600" />}
+                    label="Google Reviews"
+                    enabled={state.enableGoogle}
+                    onToggle={(val) => setState((p) => ({ ...p, enableGoogle: val }))}
+                    link={state.googleReviewLink}
                     onLinkChange={(e) =>
-                        setConfig({ ...config, googleReviewLink: e.target.value })
+                        setState((p) => ({ ...p, googleReviewLink: e.target.value }))
                     }
-                    placeholder="https://g.page/r/..."
+                    placeholder="https://g.page/r/your-id/review"
                 />
 
-                {/* Facebook */}
                 <PlatformItem
-                    icon={
-                        <img
-                            src="https://upload.wikimedia.org/wikipedia/commons/b/b8/2021_Facebook_icon.svg"
-                            alt="F"
-                            className="w-5 h-5"
-                        />
-                    }
+                    icon={<Facebook className="h-4 w-4 text-blue-700" />}
                     label="Facebook Page"
-                    color="hover:border-indigo-200 hover:bg-indigo-50/30"
-                    enabled={config.enableFacebook}
-                    onToggle={(c) => setConfig({ ...config, enableFacebook: c })}
-                    link={config.facebookReviewLink}
+                    enabled={state.enableFacebook}
+                    onToggle={(val) => setState((p) => ({ ...p, enableFacebook: val }))}
+                    link={state.facebookReviewLink}
                     onLinkChange={(e) =>
-                        setConfig({ ...config, facebookReviewLink: e.target.value })
+                        setState((p) => ({ ...p, facebookReviewLink: e.target.value }))
                     }
-                    placeholder="https://facebook.com/..."
+                    placeholder="https://facebook.com/your-business"
                 />
 
-                {/* Instagram */}
                 <PlatformItem
-                    icon={
-                        <img
-                            src="https://upload.wikimedia.org/wikipedia/commons/e/e7/Instagram_logo_2016.svg"
-                            alt="I"
-                            className="w-5 h-5"
-                        />
-                    }
-                    label="Instagram"
-                    color="hover:border-pink-200 hover:bg-pink-50/30"
-                    enabled={config.enableInstagram}
-                    onToggle={(c) => setConfig({ ...config, enableInstagram: c })}
-                    link={config.instagramReviewLink}
+                    icon={<Instagram className="h-4 w-4 text-pink-600" />}
+                    label="Instagram Profile"
+                    enabled={state.enableInstagram}
+                    onToggle={(val) => setState((p) => ({ ...p, enableInstagram: val }))}
+                    link={state.instagramReviewLink}
                     onLinkChange={(e) =>
-                        setConfig({ ...config, instagramReviewLink: e.target.value })
+                        setState((p) => ({ ...p, instagramReviewLink: e.target.value }))
                     }
-                    placeholder="https://instagram.com/..."
+                    placeholder="https://instagram.com/your-handle"
                 />
 
-                {/* RED (XiaoHongShu) */}
                 <PlatformItem
-                    icon={
-                        <span className="text-red-500 font-bold text-lg leading-none">
-                            Red
-                        </span>
-                    }
-                    label="XiaoHongShu"
-                    color="hover:border-red-200 hover:bg-red-50/30"
-                    enabled={config.enableRed}
-                    onToggle={(c) => setConfig({ ...config, enableRed: c })}
-                    link={config.redReviewLink}
+                    icon={<MessageCircle className="h-4 w-4 text-red-600" />}
+                    label="XiaoHongShu (Red)"
+                    enabled={state.enableRed}
+                    onToggle={(val) => setState((p) => ({ ...p, enableRed: val }))}
+                    link={state.redReviewLink}
                     onLinkChange={(e) =>
-                        setConfig({ ...config, redReviewLink: e.target.value })
+                        setState((p) => ({ ...p, redReviewLink: e.target.value }))
                     }
-                    placeholder="https://xiaohongshu.com/..."
+                    placeholder="https://xiaohongshu.com/user/profile/your-id"
                 />
             </CardContent>
         </Card>

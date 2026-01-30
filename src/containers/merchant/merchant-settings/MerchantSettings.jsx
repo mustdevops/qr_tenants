@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
-import { toast } from "@/lib/toast";
+import React from "react";
 import { useSession } from "next-auth/react";
 
 // Components
@@ -12,113 +11,142 @@ import BirthdayRewardsSettings from "./components/BirthdayRewardsSettings";
 import InactiveRecallSettings from "./components/InactiveRecallSettings";
 import FestivalMessageSettings from "./components/FestivalMessageSettings";
 import ScheduledCampaignSettings from "./components/ScheduledCampaignSettings";
-import StickySaveBar from "./components/StickySaveBar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Settings2, Rocket, Zap } from "lucide-react";
+import { Settings2, Rocket, Zap, Megaphone } from "lucide-react";
+
+import FeatureMasterControl from "./components/FeatureMasterControl";
+import PaidAdsSettings from "./components/PaidAdsSettings";
 
 export default function MerchantSettings() {
-  const [saving, setSaving] = useState(false);
   const { data: session } = useSession();
+  const merchantId = session?.user?.merchantId;
 
   const subscriptionType =
     session?.user?.subscriptionType?.toString?.().toLowerCase() || "temporary";
   const isAnnual = subscriptionType === "annual";
 
-  const handleSaveAllSettings = async () => {
-    setSaving(true);
-    try {
-      // Dispatch global save event that all independent components listen to
-      window.dispatchEvent(new CustomEvent("SAVE_MERCHANT_SETTINGS"));
-
-      setTimeout(() => {
-        toast.success("Settings synchronized", {
-          description: "All configurations have been successfully updated.",
-        });
-        setSaving(false);
-      }, 1500);
-    } catch (error) {
-      setSaving(false);
-    }
-  };
-
   return (
-    <div className="relative space-y-8 animate-in fade-in duration-700">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-muted/20 pb-8">
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 mb-1">
-            <div className="p-1.5 bg-primary/10 text-primary rounded-lg">
-              <Zap className="h-5 w-5" />
+    <div className="relative space-y-8 animate-in fade-in duration-1000 pb-20 overflow-x-hidden">
+      {/* Background Decorative Element */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-[100px] pointer-events-none translate-x-1/3 -translate-y-1/3" />
+
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 pb-6 border-b border-gray-100 relative z-10">
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="px-3 py-1 bg-gray-900 rounded-full text-[10px] font-semibold text-white shadow-lg">
+              Merchant Hub
             </div>
-            <span className="text-xs font-bold uppercase tracking-wider text-primary/80">
-              Merchant Control Center
+            <div className="h-px w-10 bg-gray-200" />
+            <span className="text-[10px] font-semibold text-muted-foreground">
+              Version 2.0
             </span>
           </div>
-          <h2 className="text-4xl font-extrabold tracking-tight bg-linear-to-r from-gray-900 via-gray-800 to-gray-500 bg-clip-text text-transparent">
-            Review & Reward Strategy
-          </h2>
-          <p className="text-muted-foreground text-lg max-w-2xl leading-relaxed">
-            Optimize how customers interact with your brand. Manage review
-            platforms, automated rewards, and seasonal engagement campaigns in
-            one place.
+          <h1 className="text-4xl font-bold text-gray-900 leading-none">
+            Strategy <span className="text-primary">Control</span>
+          </h1>
+          <p className="text-base text-muted-foreground font-medium max-w-xl leading-relaxed">
+            Manage your global engagement, reward mechanisms, and promotional
+            content from a single high-performance dashboard.
           </p>
+        </div>
+
+        <div className="flex items-center gap-4 bg-white p-2 rounded-2xl border border-gray-100 shadow-sm">
+          <div className="flex -space-x-3">
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="w-10 h-10 rounded-full border-4 border-white bg-gray-100 flex items-center justify-center overflow-hidden"
+              >
+                <div className="w-full h-full bg-linear-to-br from-primary/20 to-primary/5" />
+              </div>
+            ))}
+          </div>
+          <div className="pr-4">
+            <p className="text-[10px] font-semibold text-gray-400 leading-none">
+              Status
+            </p>
+            <p className="text-sm font-semibold text-gray-900">
+              Merchant Active
+            </p>
+          </div>
         </div>
       </div>
 
-      <Tabs defaultValue="core" className="w-full space-y-8">
-        <div className="flex items-center justify-between">
-          <TabsList className="bg-muted/50 p-1 rounded-xl h-auto border border-muted/20">
+      <FeatureMasterControl />
+
+      <Tabs defaultValue="settings" className="w-full space-y-8">
+        <div className="flex items-center justify-items-start">
+          <TabsList className="bg-gray-100/50 p-1.5 rounded-2xl h-auto border border-gray-200/50 backdrop-blur-sm shadow-inner">
             <TabsTrigger
-              value="core"
-              className="px-6 py-2.5 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-primary transition-all flex items-center gap-2"
+              value="paid-ads"
+              className="px-8 py-3 rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:text-primary transition-all duration-300 flex items-center gap-2.5 font-semibold text-sm"
+            >
+              <Megaphone className="h-4 w-4" />
+              Paid Ads
+            </TabsTrigger>
+            <TabsTrigger
+              value="settings"
+              className="px-8 py-3 rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:text-primary transition-all duration-300 flex items-center gap-2.5 font-semibold text-sm"
             >
               <Settings2 className="h-4 w-4" />
-              Core Configuration
+              Settings
             </TabsTrigger>
             {isAnnual && (
               <TabsTrigger
                 value="automations"
-                className="px-6 py-2.5 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-primary transition-all flex items-center gap-2"
+                className="px-8 py-3 rounded-xl data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:text-primary transition-all duration-300 flex items-center gap-2.5 font-semibold text-sm"
               >
                 <Rocket className="h-4 w-4" />
-                Marketing Automations
+                Automations
               </TabsTrigger>
             )}
           </TabsList>
         </div>
 
+        {/* Paid Ads Tab */}
         <TabsContent
-          value="core"
-          className="mt-0 animate-in fade-in slide-in-from-left-4 duration-500"
+          value="paid-ads"
+          className="mt-0 animate-in fade-in slide-in-from-bottom-4 duration-700"
         >
-          <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
-            <div className="xl:col-span-7 space-y-8">
+          <div className="flex justify-center">
+            <PaidAdsSettings merchantId={merchantId} />
+          </div>
+        </TabsContent>
+
+        {/* Global Settings Tab */}
+        <TabsContent
+          value="settings"
+          className="mt-0 animate-in fade-in slide-in-from-bottom-4 duration-700"
+        >
+          <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
+            <div className="xl:col-span-7 space-y-6">
               <PlatformSettings />
               <PresetReviewsSettings />
             </div>
 
-            <div className="xl:col-span-5 space-y-0 h-full">
+            <div className="xl:col-span-5 space-y-6 sticky top-8">
               <RewardStrategySettings />
-              <div className="p-8 rounded-3xl bg-gray-900 from-gray-900 to-gray-900 text-white border border-gray-900/20 relative overflow-hidden group shadow-xl">
-                <div className="absolute -top-10 -right-10 p-4 opacity-10 group-hover:scale-110 transition-transform duration-700 pointer-events-none">
-                  <Rocket className="h-48 w-48 text-white" />
+              <div className="p-6 rounded-3xl bg-gray-900 text-white border border-white/10 relative overflow-hidden group shadow-2xl">
+                <div className="absolute -top-12 -right-12 p-4 opacity-10 group-hover:scale-110 transition-transform duration-1000 pointer-events-none">
+                  <Rocket className="h-64 w-64 text-white" />
                 </div>
-                <div className="relative z-10 space-y-4">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-white/20 rounded-lg backdrop-blur-md">
-                      <Zap className="h-5 w-5 text-emerald-200 fill-emerald-200" />
+                <div className="relative z-10 space-y-6">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-white/10 rounded-2xl backdrop-blur-xl border border-white/20">
+                      <Zap className="h-6 w-6 text-emerald-300 fill-emerald-300" />
                     </div>
-                    <h4 className="font-extrabold text-lg tracking-tight uppercase">
-                      Strategy Insight
+                    <h4 className="font-bold text-xl tracking-tight uppercase italic underline decoration-emerald-400 decoration-4">
+                      Pro Tip
                     </h4>
                   </div>
-                  <p className="text-emerald-50/90 text-sm leading-relaxed font-medium">
-                    &quot;Combine <strong>Direct Coupons</strong> with{" "}
-                    <strong>Preset Reviews</strong> to drastically increase your
-                    positive review count while keeping customers happy with
-                    instant rewards.&quot;
+                  <p className="text-gray-300 text-sm leading-relaxed font-medium">
+                    &quot;Merging <strong>Direct Rewards</strong> with powerful{" "}
+                    <strong>Presets</strong> creates a high-conversion feedback
+                    loop that skyrockets your local SEO.&quot;
                   </p>
-                  <div className="pt-2">
-                    <div className="h-1 w-12 bg-emerald-400 rounded-full" />
+                  <div className="flex gap-2">
+                    <div className="h-1.5 w-16 bg-emerald-500 rounded-full" />
+                    <div className="h-1.5 w-4 bg-emerald-500/30 rounded-full" />
                   </div>
                 </div>
               </div>
@@ -126,30 +154,33 @@ export default function MerchantSettings() {
           </div>
         </TabsContent>
 
+        {/* Automations Tab */}
         {isAnnual && (
           <TabsContent
             value="automations"
-            className="mt-0 animate-in fade-in slide-in-from-right-4 duration-500 relative z-10"
+            className="mt-0 animate-in fade-in slide-in-from-bottom-4 duration-700"
           >
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch relative z-20">
-              <div className="flex flex-col h-full">
-                <BirthdayRewardsSettings />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+              <div className="space-y-8">
+                <div className="group transition-all duration-500">
+                  <BirthdayRewardsSettings />
+                </div>
+                <div className="group transition-all duration-500">
+                  <ScheduledCampaignSettings />
+                </div>
               </div>
-              <div className="flex flex-col h-full">
-                <InactiveRecallSettings />
-              </div>
-              <div className="flex flex-col h-full">
-                <FestivalMessageSettings />
-              </div>
-              <div className="flex flex-col h-full">
-                <ScheduledCampaignSettings />
+              <div className="space-y-8">
+                <div className="group transition-all duration-500">
+                  <InactiveRecallSettings />
+                </div>
+                <div className="group transition-all duration-500">
+                  <FestivalMessageSettings />
+                </div>
               </div>
             </div>
           </TabsContent>
         )}
       </Tabs>
-
-      <StickySaveBar loading={saving} onSave={handleSaveAllSettings} />
     </div>
   );
 }

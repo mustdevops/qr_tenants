@@ -1,70 +1,74 @@
-import React, { useEffect, useRef, useState } from "react";
-import { ChevronDown, Loader2, Check } from "lucide-react";
+import React, { useMemo, useState, useEffect } from "react";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+} from "@/components/ui/select";
+import { Loader2 } from "lucide-react";
+import axiosInstance from "@/lib/axios";
 
 export default function BatchSelector({
     selectedId,
-    batches,
+    merchantId,
     isOpen,
     setIsOpen,
     onSelect,
-    loading,
     placeholder,
+    className = "",
+    // Optional overrides if needed in future, but primarily internal fetch now
+    batches: propBatches,
+    loading: propLoading,
 }) {
-    const containerRef = useRef(null);
-    const [openUpwards, setOpenUpwards] = useState(false);
-    const selectedBatch = batches.find((b) => b.id === selectedId);
+    const [internalBatches, setInternalBatches] = useState([]);
+    const [internalLoading, setInternalLoading] = useState(false);
 
-    // Close on click outside
+    // Prefer props if provided, otherwise use internal state
+    const batches = propBatches || internalBatches;
+    const loading = propLoading !== undefined ? propLoading : internalLoading;
+
     useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (containerRef.current && !containerRef.current.contains(event.target)) {
-                setIsOpen(false);
+        // If batches are provided via props, don't fetch
+        if (propBatches) return;
+        if (!merchantId) return;
+
+        const fetchBatches = async () => {
+            setInternalLoading(true);
+            try {
+                const res = await axiosInstance.get("/coupon-batches", {
+                    params: { page: 1, pageSize: 50, merchantId },
+                });
+                const data = res?.data?.data || res?.data || {};
+                setInternalBatches(data.batches || []);
+            } catch (error) {
+                console.error("Failed to load coupon batches:", error);
+            } finally {
+                setInternalLoading(false);
             }
         };
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, [setIsOpen]);
 
-    // Close when another BatchSelector opens
-    useEffect(() => {
-        const handleCloseOthers = (e) => {
-            // If the event didn't come from this specific instance, close it
-            if (e.detail?.source !== containerRef.current && isOpen) {
-                setIsOpen(false);
-            }
-        };
-        window.addEventListener("CLOSE_OTHER_BATCH_SELECTORS", handleCloseOthers);
-        return () => window.removeEventListener("CLOSE_OTHER_BATCH_SELECTORS", handleCloseOthers);
-    }, [isOpen, setIsOpen]);
+        fetchBatches();
+    }, [merchantId, propBatches]);
 
-    const toggleDropdown = () => {
-        const nextState = !isOpen;
-        if (nextState) {
-            // Check for space below
-            if (containerRef.current) {
-                const rect = containerRef.current.getBoundingClientRect();
-                const spaceBelow = window.innerHeight - rect.bottom;
-                // If less than 300px below (typical dropdown height + safety margin), open upwards
-                setOpenUpwards(spaceBelow < 300);
-            }
+    // Find the selected batch object
+    const selectedBatch = useMemo(() =>
+        batches.find((b) => b.id === selectedId),
+        [batches, selectedId]);
 
-            // Notify others to close before opening this one
-            window.dispatchEvent(new CustomEvent("CLOSE_OTHER_BATCH_SELECTORS", {
-                detail: { source: containerRef.current }
-            }));
-        }
-        setIsOpen(nextState);
+    // Handle value change: Shadcn Select returns the value directly
+    const handleValueChange = (value) => {
+        onSelect(value);
     };
 
     return (
-        <div className={`relative ${isOpen ? "z-[100]" : "z-10"}`} ref={containerRef}>
-            <button
-                type="button"
-                onClick={toggleDropdown}
-                className={`w-full flex items-center justify-between rounded-lg border px-3 py-2.5 text-left transition-all bg-background hover:bg-muted/20 ${isOpen ? "ring-2 ring-primary/10 border-primary shadow-lg" : "border-muted/60"
-                    }`}
-            >
-                <div className="flex flex-col items-start overflow-hidden">
+        <Select
+            value={selectedId || ""}
+            onValueChange={handleValueChange}
+            open={isOpen}
+            onOpenChange={setIsOpen}
+        >
+            <SelectTrigger className={`w-full h-auto py-2 ${className}`}>
+                <div className="flex flex-col items-start text-left w-full overflow-hidden">
                     <span
                         className={`text-sm truncate w-full ${selectedId
                             ? "font-medium text-foreground"
@@ -82,53 +86,31 @@ export default function BatchSelector({
                         </span>
                     )}
                 </div>
-                <ChevronDown
-                    className={`h-4 w-4 text-muted-foreground transition-transform ${isOpen ? "rotate-180" : ""
-                        }`}
-                />
-            </button>
-
-            {isOpen && (
-                <div
-                    className={`absolute z-50 w-full rounded-xl border border-muted/30 bg-background/95 backdrop-blur-md shadow-2xl max-h-72 overflow-y-auto animate-in fade-in zoom-in-95 duration-200 scrollbar-thin scrollbar-thumb-muted-foreground/20 ${openUpwards ? "bottom-full mb-2" : "mt-1"
-                        }`}
-                >
-                    {loading ? (
-                        <div className="flex items-center justify-center py-4">
-                            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                        </div>
-                    ) : batches.length === 0 ? (
-                        <div className="py-3 px-4 text-xs text-muted-foreground text-center">
-                            No batches found
-                        </div>
-                    ) : (
-                        batches.map((batch) => (
-                            <button
-                                key={batch.id}
-                                type="button"
-                                onClick={() => {
-                                    onSelect(batch.id);
-                                    setIsOpen(false);
-                                }}
-                                className={`w-full flex items-center justify-between px-3 py-2.5 text-left hover:bg-primary/5 transition-colors ${selectedId === batch.id ? "bg-primary/10" : ""
-                                    }`}
-                            >
-                                <div className="overflow-hidden">
-                                    <div className="font-medium text-sm truncate">
-                                        {batch.batch_name}
-                                    </div>
-                                    <div className="text-[10px] text-muted-foreground truncate">
-                                        {batch.description || "No description"}
-                                    </div>
-                                </div>
-                                {selectedId === batch.id && (
-                                    <Check className="h-3.5 w-3.5 text-primary shrink-0 ml-2" />
-                                )}
-                            </button>
-                        ))
-                    )}
-                </div>
-            )}
-        </div>
+            </SelectTrigger>
+            <SelectContent className="max-h-[160px]">
+                {loading ? (
+                    <div className="flex items-center justify-center py-4">
+                        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                    </div>
+                ) : batches.length === 0 ? (
+                    <div className="py-3 px-4 text-xs text-muted-foreground text-center">
+                        No batches found
+                    </div>
+                ) : (
+                    batches.map((batch) => (
+                        <SelectItem key={batch.id} value={batch.id} className="py-2.5 cursor-pointer">
+                            <div className="flex flex-col text-left">
+                                <span className="font-medium text-sm truncate">
+                                    {batch.batch_name}
+                                </span>
+                                <span className="text-[10px] text-muted-foreground truncate">
+                                    {batch.description || "No description"}
+                                </span>
+                            </div>
+                        </SelectItem>
+                    ))
+                )}
+            </SelectContent>
+        </Select>
     );
 }

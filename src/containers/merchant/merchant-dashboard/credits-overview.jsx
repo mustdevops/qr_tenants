@@ -241,17 +241,23 @@ function WhatsAppBreakdown({ stats }) {
       {/* UI Section */}
       <div>
         <div className="flex justify-between items-center mb-1">
-          <span className="text-[10px] font-bold uppercase text-violet-600">UI Messages (User-Initiated)</span>
+          <span className="text-[10px] font-bold uppercase text-violet-600">
+            UI Messages (User-Initiated)
+          </span>
           <span className="text-xs font-bold">{ui.total ?? 0}</span>
         </div>
         <div className="space-y-2">
-          {uiItems.length > 0 ? uiItems.map((item, i) => (
-            <div key={i} className="flex justify-between text-[10px]">
-              <span className="text-muted-foreground">{item.label}</span>
-              <span className="font-medium">{item.value}</span>
-            </div>
-          )) : (
-            <p className="text-[10px] text-muted-foreground italic">No UI activity yet</p>
+          {uiItems.length > 0 ? (
+            uiItems.map((item, i) => (
+              <div key={i} className="flex justify-between text-[10px]">
+                <span className="text-muted-foreground">{item.label}</span>
+                <span className="font-medium">{item.value}</span>
+              </div>
+            ))
+          ) : (
+            <p className="text-[10px] text-muted-foreground italic">
+              No UI activity yet
+            </p>
           )}
         </div>
       </div>
@@ -259,17 +265,23 @@ function WhatsAppBreakdown({ stats }) {
       {/* BI Section */}
       <div className="pt-2 border-t border-muted">
         <div className="flex justify-between items-center mb-1">
-          <span className="text-[10px] font-bold uppercase text-amber-600">BI Messages (Business-Initiated)</span>
+          <span className="text-[10px] font-bold uppercase text-amber-600">
+            BI Messages (Business-Initiated)
+          </span>
           <span className="text-xs font-bold">{bi.total ?? 0}</span>
         </div>
         <div className="space-y-2">
-          {biItems.length > 0 ? biItems.map((item, i) => (
-            <div key={i} className="flex justify-between text-[10px]">
-              <span className="text-muted-foreground">{item.label}</span>
-              <span className="font-medium">{item.value}</span>
-            </div>
-          )) : (
-            <p className="text-[10px] text-muted-foreground italic">No BI campaigns yet</p>
+          {biItems.length > 0 ? (
+            biItems.map((item, i) => (
+              <div key={i} className="flex justify-between text-[10px]">
+                <span className="text-muted-foreground">{item.label}</span>
+                <span className="font-medium">{item.value}</span>
+              </div>
+            ))
+          ) : (
+            <p className="text-[10px] text-muted-foreground italic">
+              No BI campaigns yet
+            </p>
           )}
         </div>
       </div>
@@ -321,93 +333,75 @@ export function CreditsOverview({ data, dashboardData, loading }) {
       label: "Total Coupons",
       value: overview.totalCoupons ?? 0,
       icon: Layers,
-      color: "text-blue-600 dark:text-blue-400",
-      bgClass:
-        "from-blue-50 to-white dark:from-blue-950/50 dark:to-background border-blue-200 dark:border-blue-900",
-      iconBg: "bg-blue-100 dark:bg-blue-900",
+      color: "text-blue-600",
+      iconBg: "bg-blue-100/50",
     },
     {
       label: "Issued",
       value: overview.totalCouponsIssued ?? 0,
       icon: Ticket,
-      color: "text-amber-600 dark:text-amber-400",
-      bgClass:
-        "from-amber-50 to-white dark:from-amber-950/50 dark:to-background border-amber-200 dark:border-amber-900",
-      iconBg: "bg-amber-100 dark:bg-amber-900",
+      color: "text-amber-600",
+      iconBg: "bg-amber-100/50",
     },
     {
       label: "Redeemed",
       value: overview.totalCouponsRedeemed ?? 0,
       icon: CheckCircle,
-      color: "text-green-600 dark:text-green-400",
-      bgClass:
-        "from-green-50 to-white dark:from-green-950/50 dark:to-background border-green-200 dark:border-green-900",
-      iconBg: "bg-green-100 dark:bg-green-900",
+      color: "text-green-600",
+      iconBg: "bg-green-100/50",
     },
     {
       label: "Messages Sent",
       value:
         whatsappStats.totalMessagesSent ?? overview.whatsappMessagesSent ?? 0,
       icon: MessageCircle,
-      color: "text-purple-600 dark:text-purple-400",
-      bgClass:
-        "from-purple-50 to-white dark:from-purple-950/50 dark:to-background border-purple-200 dark:border-purple-900",
-      iconBg: "bg-purple-100 dark:bg-purple-900",
+      color: "text-purple-600",
+      iconBg: "bg-purple-100/50",
     },
     {
       label: "Credits Used",
       value: whatsappStats.creditsUsed ?? 0,
       icon: MessageSquare,
-      color: "text-violet-600 dark:text-violet-400",
-      bgClass:
-        "from-violet-50 to-white dark:from-violet-950/50 dark:to-background border-violet-200 dark:border-violet-900",
-      iconBg: "bg-violet-100 dark:bg-violet-900",
-      footer: `Est. Cost: $${(whatsappStats.estimatedCost || 0).toFixed(2)}`,
+      color: "text-violet-600",
+      iconBg: "bg-violet-100/50",
     },
     {
       label: "Total Customers",
       value: overview.totalCustomers ?? 0,
       icon: Users,
-      color: "text-orange-600 dark:text-orange-400",
-      bgClass:
-        "from-orange-50 to-white dark:from-orange-950/50 dark:to-background border-orange-200 dark:border-orange-900",
-      iconBg: "bg-orange-100 dark:bg-orange-900",
+      color: "text-orange-600",
+      iconBg: "bg-orange-100/50",
     },
   ];
 
   return (
     <div className="space-y-6 mb-8">
       {/* Top Level Metrics */}
-      <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3">
+      <div className="grid gap-4 grid-cols-3 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-3">
         {metrics.map((item, index) => {
           const Icon = item.icon;
           return (
             <Card
               key={index}
-              className={cn(
-                "overflow-hidden rounded-xl shadow-lg border-2 transition-all hover:scale-[1.02]",
-                item.bgClass,
-              )}
+              className="overflow-hidden rounded-xl shadow-lg bg-white border-none transition-all hover:scale-[1.02]"
             >
-              <CardContent className="p-6">
+              <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
                       {item.label}
                     </p>
-                    <h3 className="text-3xl sm:text-4xl font-extrabold mt-2">
+                    <h3 className="text-2xl font-extrabold mt-1 text-gray-900">
                       {(item.value ?? 0).toLocaleString()}
                     </h3>
                     {item.footer && (
-                      <p className="text-[10px] mt-2 font-medium opacity-70 italic">
+                      <p className="text-[9px] mt-1 font-medium text-muted-foreground italic">
                         {item.footer}
                       </p>
                     )}
                   </div>
-                  <div
-                    className={cn("p-3 rounded-full shadow-md", item.iconBg)}
-                  >
-                    <Icon className={cn("w-8 h-8", item.color)} />
+                  <div className={cn("p-2 rounded-full", item.iconBg)}>
+                    <Icon className={cn("w-5 h-5", item.color)} />
                   </div>
                 </div>
               </CardContent>
@@ -418,7 +412,7 @@ export function CreditsOverview({ data, dashboardData, loading }) {
 
       <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         {/* Coupon Status Chart */}
-        <Card className="xl:col-span-1 border-muted/60 shadow-sm">
+        <Card className="xl:col-span-1 overflow-hidden rounded-xl shadow-lg bg-white border-none transition-all hover:scale-[1.02]">
           <CardHeader>
             <CardTitle className="text-lg">Coupon Status</CardTitle>
             <CardDescription>Redemption Distribution</CardDescription>
@@ -429,7 +423,7 @@ export function CreditsOverview({ data, dashboardData, loading }) {
         </Card>
 
         {/* WhatsApp Breakdown */}
-        <Card className="xl:col-span-1 border-muted/60 shadow-sm">
+        <Card className="xl:col-span-1 overflow-hidden rounded-xl shadow-lg bg-white border-none transition-all hover:scale-[1.02]">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
@@ -448,7 +442,7 @@ export function CreditsOverview({ data, dashboardData, loading }) {
         </Card>
 
         {/* Feedback Breakdown */}
-        <Card className="xl:col-span-1 border-muted/60 shadow-sm">
+        <Card className="xl:col-span-1 overflow-hidden rounded-xl shadow-lg bg-white border-none transition-all hover:scale-[1.02]">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
@@ -467,7 +461,7 @@ export function CreditsOverview({ data, dashboardData, loading }) {
         </Card>
 
         {/* Top Customers */}
-        <Card className="xl:col-span-1 border-muted/60 shadow-sm">
+        <Card className="xl:col-span-1 overflow-hidden rounded-xl shadow-lg bg-white border-none transition-all hover:scale-[1.02]">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
@@ -484,7 +478,7 @@ export function CreditsOverview({ data, dashboardData, loading }) {
 
         {/* Lucky Draw & Returning */}
         <div className="xl:col-span-1 space-y-6">
-          <Card className="border-muted/60 shadow-sm">
+          <Card className="xl:col-span-1 overflow-hidden rounded-xl shadow-lg bg-white border-none transition-all hover:scale-[1.02]">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                 <UserPlus className="w-4 h-4 text-purple-500" /> Retention
@@ -500,7 +494,7 @@ export function CreditsOverview({ data, dashboardData, loading }) {
             </CardContent>
           </Card>
 
-          <Card className="border-muted/60 shadow-sm">
+          <Card className="overflow-hidden rounded-xl shadow-lg bg-white border-none transition-all hover:scale-[1.02]">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                 <Trophy className="w-4 h-4 text-yellow-500" /> Games
@@ -520,4 +514,3 @@ export function CreditsOverview({ data, dashboardData, loading }) {
     </div>
   );
 }
-

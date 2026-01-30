@@ -5,12 +5,22 @@ import {
   CardTitle,
   CardDescription,
   CardContent,
+  CardFooter,
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { CalendarClock, Megaphone, Users, Ticket } from "lucide-react";
+import {
+  CalendarClock,
+  Megaphone,
+  Users,
+  Ticket,
+  Save,
+  Loader2,
+  Sparkles,
+  Send,
+} from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -22,6 +32,7 @@ import BatchSelector from "./BatchSelector";
 import axiosInstance from "@/lib/axios";
 import { useSession } from "next-auth/react";
 import { toast } from "@/lib/toast";
+import { Button } from "@/components/ui/button";
 
 export default function ScheduledCampaignSettings() {
   const { data: session } = useSession();
@@ -36,25 +47,8 @@ export default function ScheduledCampaignSettings() {
     sendCoupons: true,
     batchId: null,
   });
-  const [couponBatches, setCouponBatches] = useState([]);
-  const [loadingBatches, setLoadingBatches] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-
-  const fetchCouponBatches = useCallback(async () => {
-    if (!merchantId) return;
-    setLoadingBatches(true);
-    try {
-      const res = await axiosInstance.get("/coupon-batches", {
-        params: { page: 1, pageSize: 50 },
-      });
-      const data = res?.data?.data || res?.data || {};
-      setCouponBatches(data.batches || []);
-    } catch (error) {
-      console.error("Failed to load coupon batches:", error);
-    } finally {
-      setLoadingBatches(false);
-    }
-  }, [merchantId]);
+  const [saving, setSaving] = useState(false);
 
   const fetchSettings = useCallback(async () => {
     if (!merchantId) return;
@@ -67,21 +61,31 @@ export default function ScheduledCampaignSettings() {
         setEnabled(data.scheduled_campaign_enabled ?? false);
 
         if (data.scheduled_campaign_enabled) {
-          const schedRes = await axiosInstance.get("/scheduled-campaigns", {
-            params: { merchant_id: merchantId },
-          });
-          const schedData = schedRes?.data?.data?.[0] || schedRes?.data?.[0];
-          if (schedData) {
-            setState({
-              name: schedData.campaign_name || "",
-              message: schedData.campaign_message || "",
-              date: schedData.scheduled_date
-                ? new Date(schedData.scheduled_date).toISOString().slice(0, 16)
-                : "",
-              audience: schedData.target_audience || "all",
-              sendCoupons: schedData.send_coupons ?? true,
-              batchId: schedData.coupon_batch_id || null,
-            });
+          try {
+            const schedRes = await axiosInstance.get(
+              `/scheduled-campaigns?merchant_id=${merchantId}&status=scheduled`,
+            );
+            const schedData = schedRes?.data?.data?.[0] || schedRes?.data?.[0];
+            if (schedData) {
+              setState({
+                name: schedData.campaign_name || "",
+                message: schedData.campaign_message || "",
+                date: schedData.scheduled_date
+                  ? new Date(schedData.scheduled_date)
+                    .toISOString()
+                    .slice(0, 16)
+                  : "",
+                audience: schedData.target_audience || "all",
+                sendCoupons: schedData.send_coupons ?? true,
+                batchId: schedData.coupon_batch_id || null,
+              });
+            }
+          } catch (campError) {
+            console.warn(
+              "Could not fetch scheduled campaigns details:",
+              campError,
+            );
+            // 403 is expected if user has no campaigns or strictly forbidden, don't crash the UI
           }
         }
       }
@@ -92,194 +96,237 @@ export default function ScheduledCampaignSettings() {
 
   useEffect(() => {
     fetchSettings();
-    fetchCouponBatches();
-  }, [fetchSettings, fetchCouponBatches]);
+  }, [fetchSettings]);
 
-  const handleSave = useCallback(async () => {
-    if (!merchantId) return;
-    if (enabled) {
-      if (state.sendCoupons && !state.batchId) {
-        toast.error("Action Required: Scheduled Campaign", {
-          description: "Please select a coupon batch to include in your blast.",
-        });
-        return;
-      }
-      if (!state.name || !state.message || !state.date) {
-        toast.error("Incomplete Campaign Details", {
-          description:
-            "Please provide a name, message, and date for your broadcast.",
-        });
-        return;
-      }
-    }
-
-    try {
-      // 1. Save toggle
-      await axiosInstance.patch(`/merchant-settings/merchant/${merchantId}`, {
-        merchant_id: merchantId,
-        // scheduled_campaign_enabled: enabled,
-      });
-
-      // 2. Save details
+  const handleSave = useCallback(
+    async (isGlobal = false) => {
+      if (!merchantId) return;
       if (enabled) {
-        const payload = {
-          merchant_id: merchantId,
-          campaign_name: state.name,
-          campaign_message: state.message,
-          scheduled_date: new Date(state.date).toISOString(),
-          target_audience: state.audience,
-          send_coupons: state.sendCoupons,
-          coupon_batch_id: state.sendCoupons ? state.batchId : null,
-        };
-        await axiosInstance.post("/scheduled-campaigns", payload);
+        if (state.sendCoupons && !state.batchId) {
+          if (!isGlobal) {
+            toast.error("Action Required: Scheduled Campaign", {
+              description:
+                "Please select a coupon batch to include in your blast.",
+            });
+          }
+          return;
+        }
+        if (!state.name || !state.message || !state.date) {
+          if (!isGlobal) {
+            toast.error("Incomplete Campaign Details", {
+              description:
+                "Please provide a name, message, and date for your broadcast.",
+            });
+          }
+          return;
+        }
       }
-    } catch (error) {
-      console.error("Failed to save scheduled campaign settings:", error);
-      throw error;
-    }
-  }, [merchantId, enabled, state]);
+
+      if (!isGlobal) setSaving(true);
+      try {
+        // 1. Save toggle
+        await axiosInstance.patch(`/merchant-settings/merchant/${merchantId}`, {
+          merchant_id: merchantId,
+          scheduled_campaign_enabled: enabled,
+        });
+
+        // 2. Save details
+        if (enabled) {
+          const payload = {
+            merchant_id: merchantId,
+            campaign_name: state.name,
+            campaign_message: state.message,
+            scheduled_date: new Date(state.date).toISOString(),
+            target_audience: state.audience,
+            send_coupons: state.sendCoupons,
+            coupon_batch_id: state.sendCoupons ? state.batchId : null,
+          };
+          await axiosInstance.post("/scheduled-campaigns", payload);
+        }
+
+        if (!isGlobal) {
+          toast.success("Campaign Scheduled", {
+            description: "Your marketing blast has been queued for delivery.",
+          });
+        }
+      } catch (error) {
+        console.error("Failed to save scheduled campaign settings:", error);
+        if (!isGlobal) {
+          toast.error("Save Failed", {
+            description: "Could not schedule campaign. Please try again.",
+          });
+        }
+        throw error;
+      } finally {
+        if (!isGlobal) setSaving(false);
+      }
+    },
+    [merchantId, enabled, state],
+  );
 
   useEffect(() => {
-    window.addEventListener("SAVE_MERCHANT_SETTINGS", handleSave);
+    const onSettingsUpdate = (e) => {
+      if (e.detail?.scheduled_campaign_enabled !== undefined) {
+        setEnabled(e.detail.scheduled_campaign_enabled);
+      }
+    };
+    window.addEventListener("MERCHANT_SETTINGS_UPDATED", onSettingsUpdate);
     return () =>
-      window.removeEventListener("SAVE_MERCHANT_SETTINGS", handleSave);
-  }, [handleSave]);
+      window.removeEventListener("MERCHANT_SETTINGS_UPDATED", onSettingsUpdate);
+  }, []);
 
   return (
-    <Card
-      className={`border-muted/40 shadow-sm overflow-visible transition-all duration-300 hover:shadow-md bg-linear-to-br from-white to-gray-50/30 flex flex-col h-full ${dropdownOpen ? "z-50" : "z-10"}`}
-    >
-      <CardHeader className="pb-6 border-b border-muted/20 bg-orange-50/30 rounded-t-2xl overflow-hidden relative">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-orange-100 text-orange-700 rounded-xl">
-              <Megaphone className="h-5 w-5" />
-            </div>
-            <div>
-              <CardTitle className="text-xl font-bold">
-                Scheduled Campaigns
-              </CardTitle>
-              <CardDescription>Plan future marketing blasts</CardDescription>
-            </div>
+    <Card className="border-border/40 shadow-sm transition-all duration-300 hover:shadow-md bg-white rounded-2xl overflow-hidden group">
+      <div className="p-4 flex items-center justify-between border-b border-border/40 bg-linear-to-b from-gray-50/50 to-white">
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-xl bg-orange-100/50 text-orange-600 flex items-center justify-center shadow-inner group-hover:scale-105 transition-transform duration-300">
+            <Megaphone className="h-5 w-5" />
           </div>
-          <Switch
-            checked={enabled}
-            onCheckedChange={setEnabled}
-            className="data-[state=checked]:bg-orange-600 shadow-xs"
-          />
+          <div className="space-y-0.5">
+            <h3 className="font-semibold text-sm text-gray-900 leading-none">
+              Campaigns
+            </h3>
+            <p className="text-[11px] text-muted-foreground font-medium">
+              Schedule blasts
+            </p>
+          </div>
         </div>
-      </CardHeader>
-      <CardContent
-        className={`p-6 flex-1 flex flex-col space-y-6 transition-all duration-500 ${
-          !enabled
-            ? "opacity-30 grayscale pointer-events-none scale-[0.98]"
-            : "opacity-100 scale-100"
-        }`}
+        <div className="flex items-center gap-3">
+          <span
+            className={`text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-full border ${enabled ? "bg-orange-50 text-orange-600 border-orange-100" : "bg-gray-50 text-gray-400 border-gray-100"}`}
+          >
+            {enabled ? "Active" : "Off"}
+          </span>
+        </div>
+      </div>
+
+      <div
+        className={`grid transition-all duration-500 ease-in-out ${enabled
+            ? "grid-rows-[1fr] opacity-100"
+            : "grid-rows-[0fr] opacity-50 grayscale"
+          }`}
       >
-        <div className="flex-1 space-y-6">
-          <div className="grid grid-cols-1 gap-5">
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">Campaign Name</Label>
+        <div className="overflow-hidden">
+          <CardContent className="px-4 space-y-4">
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-gray-700 ml-1">
+                Campaign Name
+              </Label>
               <Input
-                placeholder="e.g. Grand Opening Special"
+                placeholder="Ex: Halloween Sale"
                 value={state.name}
                 onChange={(e) =>
                   setState((p) => ({ ...p, name: e.target.value }))
                 }
-                className="focus-visible:ring-orange-500"
+                className="h-9 bg-gray-50/50 border-gray-200 focus:bg-white focus:border-orange-500/50 text-sm"
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-sm font-medium flex items-center gap-2">
-                  <CalendarClock className="h-4 w-4 text-orange-500" />
-                  Date & Time
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-gray-700 ml-1">
+                  Launch Date
                 </Label>
-                <Input
-                  type="datetime-local"
-                  value={state.date}
-                  onChange={(e) =>
-                    setState((p) => ({ ...p, date: e.target.value }))
-                  }
-                  className="focus-visible:ring-orange-500"
-                />
+                <div className="relative">
+                  <Input
+                    type="datetime-local"
+                    value={state.date}
+                    onChange={(e) =>
+                      setState((p) => ({ ...p, date: e.target.value }))
+                    }
+                    className="h-9 bg-gray-50/50 border-gray-200 focus:bg-white focus:border-orange-500/50 text-[11px] px-2 font-medium"
+                  />
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label className="text-sm font-medium flex items-center gap-2">
-                  <Users className="h-4 w-4 text-orange-500" />
-                  Target Audience
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-gray-700 ml-1">
+                  Audience
                 </Label>
-                <Select
-                  value={state.audience}
-                  onValueChange={(val) =>
-                    setState((p) => ({ ...p, audience: val }))
-                  }
-                >
-                  <SelectTrigger className="focus:ring-orange-500">
-                    <SelectValue placeholder="Select audience" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Customers</SelectItem>
-                    <SelectItem value="active">Active (30 days)</SelectItem>
-                    <SelectItem value="inactive">
-                      Inactive (90+ days)
-                    </SelectItem>
-                    <SelectItem value="first_time">
-                      First-time Visitors
-                    </SelectItem>
-                    <SelectItem value="returning">
-                      Returning Customers
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="relative">
+                  <Select
+                    value={state.audience}
+                    onValueChange={(val) =>
+                      setState((p) => ({ ...p, audience: val }))
+                    }
+                  >
+                    <SelectTrigger className="h-9 bg-gray-50/50 border-gray-200 focus:border-orange-500/50 pl-8 text-xs">
+                      <SelectValue placeholder="Select" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Users</SelectItem>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="inactive">Inactive</SelectItem>
+                      <SelectItem value="first_time">First-time</SelectItem>
+                      <SelectItem value="returning">Returning</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Users className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-orange-500/50 pointer-events-none z-10" />
+                </div>
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">Message Content</Label>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-gray-700 ml-1">
+                Message
+              </Label>
               <Textarea
-                placeholder="Hi {customer_name}, we're excited..."
+                placeholder="Hi {name}, ..."
                 value={state.message}
                 onChange={(e) =>
                   setState((p) => ({ ...p, message: e.target.value }))
                 }
-                className="min-h-[100px] focus-visible:ring-orange-500"
+                className="min-h-20 bg-gray-50/50 border-gray-200 focus:bg-white focus:border-orange-500/50 text-sm resize-none"
               />
             </div>
 
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <Label className="text-sm font-medium flex items-center gap-2">
-                  <Ticket className="h-4 w-4 text-orange-500" />
-                  Include Coupons
+            <div className="pt-2">
+              <div className="flex items-center justify-between mb-2">
+                <Label className="text-xs font-semibold text-gray-700 flex items-center gap-1.5">
+                  <Ticket className="h-3.5 w-3.5 text-orange-500" />
+                  Attach Coupon
                 </Label>
                 <Switch
                   checked={state.sendCoupons}
                   onCheckedChange={(c) =>
                     setState((p) => ({ ...p, sendCoupons: c }))
                   }
-                  className="data-[state=checked]:bg-orange-500"
+                  className="scale-75 data-[state=checked]:bg-orange-500"
                 />
               </div>
 
-              {state.sendCoupons && (
-                <div className="animate-in slide-in-from-top-2">
-                  <BatchSelector
-                    selectedId={state.batchId}
-                    batches={couponBatches}
-                    isOpen={dropdownOpen}
-                    setIsOpen={setDropdownOpen}
-                    onSelect={(id) => setState((p) => ({ ...p, batchId: id }))}
-                    loading={loadingBatches}
-                    placeholder="Choose campaign reward..."
-                  />
-                </div>
-              )}
+              <div
+                className={`transition-all duration-300 overflow-hidden ${state.sendCoupons ? "max-h-20 opacity-100" : "max-h-0 opacity-0"}`}
+              >
+                <BatchSelector
+                  selectedId={state.batchId}
+                  merchantId={merchantId}
+                  isOpen={dropdownOpen}
+                  setIsOpen={setDropdownOpen}
+                  onSelect={(id) => setState((p) => ({ ...p, batchId: id }))}
+                  placeholder="Select campaign reward..."
+                  className="h-9 text-sm"
+                />
+              </div>
             </div>
-          </div>
+
+            <div className="flex justify-end pt-2">
+              <Button
+                onClick={() => handleSave(false)}
+                disabled={saving}
+                size="sm"
+                className="bg-blue-700 hover:bg-blue-800 text-white shadow-sm hover:shadow-blue-200 transition-all h-8 px-4 text-xs font-semibold rounded-lg w-full"
+              >
+                {saving ? (
+                  <Loader2 className="h-3 w-3 animate-spin mr-2" />
+                ) : (
+                  <Send className="h-3 w-3 mr-2" />
+                )}
+                Schedule Campaign
+              </Button>
+            </div>
+          </CardContent>
         </div>
-      </CardContent>
+      </div>
     </Card>
   );
 }

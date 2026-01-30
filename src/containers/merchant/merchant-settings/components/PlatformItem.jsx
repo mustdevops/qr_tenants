@@ -7,7 +7,6 @@ import { Link as LinkIcon } from "lucide-react";
 export default function PlatformItem({
     icon,
     label,
-    color,
     enabled,
     onToggle,
     link,
@@ -16,45 +15,43 @@ export default function PlatformItem({
 }) {
     return (
         <div
-            className={`rounded-2xl border transition-all duration-500 overflow-hidden ${enabled
-                ? `bg-white shadow-md border-primary/20 scale-[1.01]`
-                : "bg-muted/5 border-muted/30 scale-100"
+            className={`rounded-xl border transition-all duration-500 ease-out overflow-hidden ${enabled
+                ? "bg-white shadow-sm border-primary/20"
+                : "bg-gray-50/20 border-gray-100 grayscale-[0.8] opacity-50"
                 }`}
         >
-            <div className="p-4 flex items-center justify-between">
+            <div className="p-3 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 flex items-center justify-center shrink-0">
-                        {icon}
+                    <div className={`w-9 h-9 flex items-center justify-center shrink-0 rounded-lg transition-all duration-500 ${enabled ? "bg-primary/5 shadow-inner" : "bg-gray-200"
+                        }`}>
+                        {React.cloneElement(icon, { className: "h-4.5 w-4.5" })}
                     </div>
-                    <Label
-                        className={`text-sm font-semibold cursor-pointer ${enabled ? "text-foreground" : "text-muted-foreground"
-                            }`}
-                    >
-                        {label}
-                    </Label>
+                    <div className="space-y-0">
+                        <Label
+                            className={`text-sm font-semibold cursor-pointer transition-colors ${enabled ? "text-gray-900" : "text-gray-500"
+                                }`}
+                        >
+                            {label}
+                        </Label>
+                    </div>
                 </div>
-                <Switch
-                    checked={enabled}
-                    onCheckedChange={onToggle}
-                    className="data-[state=checked]:bg-primary shadow-xs"
-                />
             </div>
 
             <div
-                className={`grid transition-all duration-300 ease-in-out ${enabled
-                    ? "grid-rows-[1fr] opacity-100 pb-4 px-4"
-                    : "grid-rows-[0fr] opacity-0 p-0"
+                className={`grid transition-all duration-500 ease-in-out ${enabled ? "grid-rows-[1fr] opacity-100 pb-3 px-3" : "grid-rows-[0fr] opacity-0"
                     }`}
             >
                 <div className="overflow-hidden">
-                    <div className="relative">
+                    <div className="relative group">
+                        <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center justify-center">
+                            <LinkIcon className="w-4 h-4 text-muted-foreground/40 group-focus-within:text-primary transition-colors" />
+                        </div>
                         <Input
                             value={link}
                             onChange={onLinkChange}
                             placeholder={placeholder}
-                            className="pl-10 bg-muted/30 border-muted/40 focus:bg-white focus-visible:ring-primary/30 transition-all rounded-xl"
+                            className="pl-11 h-10 bg-gray-50/50 border-gray-200/60 focus:bg-white focus-visible:ring-primary/20 transition-all rounded-lg font-medium text-xs border-2 placeholder:text-muted-foreground/40"
                         />
-                        <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                     </div>
                 </div>
             </div>

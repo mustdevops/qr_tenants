@@ -222,7 +222,7 @@ export default function AnnualWalletView({
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {/* Card 1: Main Balance */}
-        <Card className="bg-linear-to-br from-primary/10 via-background to-background border-primary/20 shadow-sm relative overflow-hidden">
+        <Card className="bg-linear-to-br from-primary/10 via-background to-background border-primary/20 relative overflow-hidden rounded-xl shadow-lg bg-white border-none transition-all hover:scale-[1.02]">
           <div className="absolute right-0 top-0 h-24 w-24 translate-x-8 translate-y--8 rounded-full bg-primary/5 blur-3xl" />
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <div className="space-y-1">
@@ -293,7 +293,7 @@ export default function AnnualWalletView({
         </Card>
 
         {/* Card 2: Credit Details */}
-        <Card className="shadow-sm">
+        <Card className="overflow-hidden rounded-xl shadow-lg bg-white border-none transition-all hover:scale-[1.02]">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <div className="space-y-1">
               <CardTitle className="text-lg font-medium">
@@ -345,7 +345,7 @@ export default function AnnualWalletView({
         </Card>
 
         {/* Card 3: Subscription & Status */}
-        <Card className="shadow-sm">
+        <Card className="overflow-hidden rounded-xl shadow-lg bg-white border-none transition-all hover:scale-[1.02]">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <div className="space-y-1">
               <CardTitle className="text-lg font-medium">

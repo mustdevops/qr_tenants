@@ -13,12 +13,12 @@ const format = (num) => {
   return !isNaN(n) ? n.toLocaleString() : "--";
 };
 
-const UpgradeCard = ({ feeData, adminId }) => {
+const UpgradeCard = ({ feeData, merchantId }) => {
   const [upgrading, setUpgrading] = useState(false);
 
   const handleUpgrade = async () => {
-    if (!feeData || !adminId) {
-      toast.error("Unable to proceed. Missing fee or admin information.");
+    if (!feeData || !merchantId) {
+      toast.error("Unable to proceed. Missing fee or merchant information.");
       return;
     }
 
@@ -32,14 +32,15 @@ const UpgradeCard = ({ feeData, adminId }) => {
         name: "Annual Merchant Subscription",
         price: feeData.fee,
         currency: feeData.currency,
-        admin_id: adminId
+        merchant_id: merchantId
       }));
 
       // Create checkout session
       const res = await axiosInstance.post("/stripe/create-checkout-session", {
         amount: amount,
-        currency: feeData.currency || "usd",
+        currency: "usd",
         package_id: 0,
+        merchant_id: merchantId, // Pass merchant ID for agent key resolution
       });
 
       if (res.data?.sessionUrl) {
@@ -109,7 +110,7 @@ export const getDashboardTabs = ({
   dashboardData,
   loadingDashboard,
   feeData,
-  adminId,
+  merchantId,
 }) => {
   const isAnnual = subscriptionType === "annual";
 
@@ -120,7 +121,7 @@ export const getDashboardTabs = ({
       content: (
         <div className="space-y-6">
           {!isAnnual && (
-            <UpgradeCard feeData={feeData} adminId={adminId} />
+            <UpgradeCard feeData={feeData} merchantId={merchantId} />
           )}
           {/* Stats Grid */}
           <CreditsOverview

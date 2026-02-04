@@ -98,6 +98,7 @@ export default function TemporaryWalletView({
         amount: amount,
         currency: feeData.currency || "usd",
         package_id: 0, // Dummy ID as we handle logic via localStorage/metadata
+        merchant_id: wallet?.merchant?.id, // Pass merchant ID for agent key resolution
       });
 
       if (res.data?.sessionUrl) {

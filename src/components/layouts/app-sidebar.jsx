@@ -102,6 +102,21 @@ export function AppSidebar({
       url: "/agent/logs",
       icon: Search,
     },
+    {
+      title: "Settings",
+      url: "/agent/settings",
+      icon: Settings,
+      items: [
+        {
+          title: "Platform Settings",
+          url: "/agent/settings",
+        },
+        {
+          title: "Stripe Settings",
+          url: "/agent/settings/stripe",
+        },
+      ],
+    },
   ];
 
   // {
@@ -165,12 +180,12 @@ export function AppSidebar({
     // Annual-only sections
     ...(subscriptionType === "annual"
       ? [
-          {
-            title: "Customer Data",
-            url: "/merchant/customer-data",
-            icon: Database,
-          },
-        ]
+        {
+          title: "Customer Data",
+          url: "/merchant/customer-data",
+          icon: Database,
+        },
+      ]
       : []),
 
     {

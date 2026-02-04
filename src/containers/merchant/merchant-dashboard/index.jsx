@@ -102,7 +102,7 @@ export default function MerchantDashboardContainer() {
     dashboardData,
     loadingDashboard,
     feeData,
-    adminId: session?.user?.adminId
+    merchantId: session?.user?.merchantId,
   });
 
   return (

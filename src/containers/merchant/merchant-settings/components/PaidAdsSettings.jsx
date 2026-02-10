@@ -212,9 +212,16 @@ export default function PaidAdsSettings({ config: initialConfig, merchantId }) {
     const file = e.target.files[0];
     if (!file || !merchantId) return;
 
-    // Size limit check (e.g., 50MB)
-    if (file.size > 50 * 1024 * 1024) {
-      toast.error("Video file is too large. Max size is 50MB.");
+    // Format validation
+    const allowedTypes = ["video/mp4", "video/webm"];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error("Unsupported video format. Only MP4 and WebM are allowed.");
+      return;
+    }
+
+    // Size limit check (30MB)
+    if (file.size > 30 * 1024 * 1024) {
+      toast.error("Video file is too large. Max size is 30MB.");
       return;
     }
 
@@ -599,7 +606,7 @@ export default function PaidAdsSettings({ config: initialConfig, merchantId }) {
                             Add Video
                           </span>
                           <p className="text-[10px] text-muted-foreground mt-0.5">
-                            MP4, WebM (Max 50MB)
+                            MP4, WebM (Max 30MB)
                           </p>
                         </div>
                       </Label>

@@ -932,10 +932,10 @@ export default function AgentLandingPage({ agentId: agentIdProp } = {}) {
           </div>
 
           <div className="flex gap-8 text-sm font-bold">
-            <Link href="#" className="hover:text-white transition">
+            <Link href="/privacy-policy" className="hover:text-white transition">
               {t("footer.privacyPolicy")}
             </Link>
-            <Link href="#" className="hover:text-white transition">
+            <Link href="/terms-and-conditions" className="hover:text-white transition">
               {t("footer.termsOfService")}
             </Link>
             <Link href="#" className="hover:text-white transition">

@@ -252,6 +252,18 @@ export function AppSidebar({
       allowedStaff: ["super_admin"],
     },
     {
+      title: "Privacy Policy",
+      url: "/master-admin/privacy-policy",
+      icon: FileText,
+      allowedStaff: ["super_admin"],
+    },
+    {
+      title: "Terms & Conditions",
+      url: "/master-admin/terms-and-conditions",
+      icon: FileText,
+      allowedStaff: ["super_admin"],
+    },
+    {
       title: tSidebar("masterAdmin.logs"),
       url: "/master-admin/logs",
       icon: Search,

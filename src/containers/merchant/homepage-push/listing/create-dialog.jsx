@@ -23,9 +23,17 @@ import { toast } from "@/lib/toast";
 import { useTranslations } from "next-intl";
 import { Loader2, Info } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useSession } from "next-auth/react";
 
-export default function CreateHomepagePushDialog({ open, onClose, onSuccess }) {
+export default function CreateHomepagePushDialog({
+  open,
+  onClose,
+  onSuccess,
+  merchantId: merchantIdProp,
+}) {
   const t = useTranslations("merchantHomepagePush.create");
+  const { data: session } = useSession();
+
   const getTodayDateString = () => {
     const today = new Date();
     const year = today.getFullYear();
@@ -34,39 +42,114 @@ export default function CreateHomepagePushDialog({ open, onClose, onSuccess }) {
     return `${year}-${month}-${day}`;
   };
 
-  const [type, setType] = useState("coupon"); // 'coupon' or 'ad'
+  const formatDateForInput = (value) => {
+    if (!value) return getTodayDateString();
+
+    if (value instanceof Date) {
+      const year = value.getFullYear();
+      const month = `${value.getMonth() + 1}`.padStart(2, "0");
+      const day = `${value.getDate()}`.padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+
+    const normalized = String(value);
+    let parsed;
+
+    if (normalized.includes("T")) {
+      const parsedDateTime = new Date(normalized);
+      if (Number.isNaN(parsedDateTime.getTime())) return getTodayDateString();
+      parsed = new Date(
+        parsedDateTime.getFullYear(),
+        parsedDateTime.getMonth(),
+        parsedDateTime.getDate(),
+      );
+    } else {
+      const [year, month, day] = normalized.split("-").map(Number);
+      if (!year || !month || !day) {
+        const fallback = new Date(normalized);
+        if (Number.isNaN(fallback.getTime())) return getTodayDateString();
+        parsed = new Date(
+          fallback.getFullYear(),
+          fallback.getMonth(),
+          fallback.getDate(),
+        );
+      } else {
+        parsed = new Date(year, month - 1, day);
+      }
+    }
+
+    const year = parsed.getFullYear();
+    const month = `${parsed.getMonth() + 1}`.padStart(2, "0");
+    const day = `${parsed.getDate()}`.padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
+  const formatPlacementLabel = (placement) => {
+    const normalized = String(placement || "top").toLowerCase();
+    if (normalized === "top") return "Top";
+    if (normalized === "bottom") return "Bottom";
+    if (normalized === "left") return "Left";
+    if (normalized === "right") return "Right";
+    return normalized;
+  };
+
+  const [type, setType] = useState("coupon");
   const [selectedBatchId, setSelectedBatchId] = useState("");
   const [startDate, setStartDate] = useState(getTodayDateString());
   const [couponBatches, setCouponBatches] = useState([]);
   const [slots, setSlots] = useState(null);
   const [pricing, setPricing] = useState(null);
+  const [adConfig, setAdConfig] = useState({
+    placement: "top",
+    startDate: getTodayDateString(),
+  });
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
+  const merchantId = (() => {
+    if (merchantIdProp || session?.user?.merchantId) {
+      return merchantIdProp || session?.user?.merchantId;
+    }
+
+    if (typeof window === "undefined") {
+      return null;
+    }
+
+    return (
+      window.localStorage.getItem("merchantId") ||
+      window.sessionStorage.getItem("merchantId")
+    );
+  })();
 
   useEffect(() => {
     if (open) {
       fetchData();
     }
-  }, [open]);
+  }, [open, merchantId]);
 
+  const getEffectiveStartDate = () =>
+    type === "ad" ? adConfig.startDate : startDate;
 
-  // Calculate end date based on start date and duration
   const getEndDate = () => {
-    if (!startDate || !pricing) return "";
-    
-    const duration = type === "coupon" ? pricing.couponDuration : pricing.adDuration;
-    const start = new Date(startDate);
+    if (!pricing) return "";
+    const effectiveStartDate = getEffectiveStartDate();
+    if (!effectiveStartDate) return "";
+
+    const duration =
+      type === "coupon" ? pricing.couponDuration : pricing.adDuration;
+    const start = new Date(effectiveStartDate);
     const end = new Date(start);
     end.setDate(end.getDate() + duration);
-    
-    return end.toISOString().split("T")[0];
-  };
 
+    const year = end.getFullYear();
+    const month = `${end.getMonth() + 1}`.padStart(2, "0");
+    const day = `${end.getDate()}`.padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      // Fetch merchant coupon batches
       const batchesResp = await axiosInstance.get("/coupon-batches", {
         params: { page: 1, pageSize: 200 },
       });
@@ -76,12 +159,12 @@ export default function CreateHomepagePushDialog({ open, onClose, onSuccess }) {
         : batchesPayload?.batches || [];
       setCouponBatches(batchesList);
 
-      // Fetch available slots
       const slotsResp = await axiosInstance.get("/approvals/available-homepage-slots");
       setSlots(slotsResp?.data || {});
 
-      // Fetch pricing from public endpoint
-      const settingsResp = await axiosInstance.get("/super-admin-settings/homepage-placement-pricing");
+      const settingsResp = await axiosInstance.get(
+        "/super-admin-settings/homepage-placement-pricing",
+      );
       const settings = settingsResp?.data?.data || settingsResp?.data || {};
       setPricing({
         coupon: settings?.homepage_coupon_placement_cost || 50,
@@ -89,6 +172,25 @@ export default function CreateHomepagePushDialog({ open, onClose, onSuccess }) {
         couponDuration: settings?.coupon_homepage_placement_duration_days || 7,
         adDuration: settings?.ad_homepage_placement_duration_days || 7,
       });
+
+      if (merchantId) {
+        const merchantSettingsResp = await axiosInstance.get(
+          `/merchant-settings/merchant/${merchantId}`,
+        );
+        const merchantSettingsPayload = merchantSettingsResp?.data || {};
+        const merchantSettings =
+          merchantSettingsPayload?.data?.data ||
+          merchantSettingsPayload?.data ||
+          merchantSettingsPayload ||
+          {};
+
+        setAdConfig({
+          placement: merchantSettings?.superadmin_homepage_ad_placement || "top",
+          startDate: formatDateForInput(
+            merchantSettings?.superadmin_homepage_ad_start_date,
+          ),
+        });
+      }
     } catch (err) {
       console.error("Error fetching data:", err);
       toast.error(t("errors.failedToLoadData"));
@@ -99,7 +201,7 @@ export default function CreateHomepagePushDialog({ open, onClose, onSuccess }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (type === "coupon" && !selectedBatchId) {
       toast.error(t("errors.selectCoupon"));
       return;
@@ -127,7 +229,7 @@ export default function CreateHomepagePushDialog({ open, onClose, onSuccess }) {
     }
   };
 
-  const availableSlots = type === "coupon" 
+  const availableSlots = type === "coupon"
     ? slots?.coupons?.available || 0
     : slots?.ads?.available || 0;
 
@@ -152,7 +254,6 @@ export default function CreateHomepagePushDialog({ open, onClose, onSuccess }) {
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Available Slots Alert */}
             <Alert>
               <Info className="h-4 w-4" />
               <AlertDescription>
@@ -164,13 +265,10 @@ export default function CreateHomepagePushDialog({ open, onClose, onSuccess }) {
 
             {availableSlots === 0 && (
               <Alert variant="destructive">
-                <AlertDescription>
-                  {t("errors.noSlotsAvailable")}
-                </AlertDescription>
+                <AlertDescription>{t("errors.noSlotsAvailable")}</AlertDescription>
               </Alert>
             )}
 
-            {/* Type Selection */}
             <div className="space-y-2">
               <Label>{t("fields.type.label")}</Label>
               <Select value={type} onValueChange={setType}>
@@ -178,23 +276,24 @@ export default function CreateHomepagePushDialog({ open, onClose, onSuccess }) {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="coupon">
-                    {t("fields.type.options.coupon")}
-                  </SelectItem>
-                  <SelectItem value="ad">
-                    {t("fields.type.options.ad")}
-                  </SelectItem>
+                  <SelectItem value="coupon">{t("fields.type.options.coupon")}</SelectItem>
+                  <SelectItem value="ad">{t("fields.type.options.ad")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            {/* Coupon Selection (if type is coupon) */}
             {type === "coupon" && (
               <div className="space-y-2">
                 <Label>{t("fields.coupon.label")}</Label>
-                <Select value={selectedBatchId} onValueChange={setSelectedBatchId} disabled={!hasAvailableBatches}>
+                <Select
+                  value={selectedBatchId}
+                  onValueChange={setSelectedBatchId}
+                  disabled={!hasAvailableBatches}
+                >
                   <SelectTrigger>
-                    <SelectValue placeholder={hasAvailableBatches ? t("fields.coupon.placeholder") : "No coupon batches available"} />
+                    <SelectValue
+                      placeholder={hasAvailableBatches ? t("fields.coupon.placeholder") : "No coupon batches available"}
+                    />
                   </SelectTrigger>
                   <SelectContent>
                     {hasAvailableBatches ? (
@@ -213,7 +312,6 @@ export default function CreateHomepagePushDialog({ open, onClose, onSuccess }) {
               </div>
             )}
 
-            {/* Ad Placement (if type is ad) */}
             {type === "ad" && (
               <div className="space-y-2">
                 <Alert>
@@ -222,41 +320,42 @@ export default function CreateHomepagePushDialog({ open, onClose, onSuccess }) {
                     For ad requests, media, placement, and start date are taken from Merchant Settings → Superadmin Homepage Ad Settings.
                   </AlertDescription>
                 </Alert>
+                <div className="space-y-1">
+                  <Label>Placement</Label>
+                  <Input
+                    value={formatPlacementLabel(adConfig.placement)}
+                    disabled
+                    className="bg-muted"
+                  />
+                </div>
               </div>
             )}
 
             {type === "coupon" && (
-            <div className="space-y-2">
-              <Label>Start Date</Label>
-              <Input
-                type="date"
-                min={getTodayDateString()}
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-              />
-              <p className="text-xs text-muted-foreground">
-                Select your preferred start date for the campaign
-              </p>
-            </div>
+              <div className="space-y-2">
+                <Label>Start Date</Label>
+                <Input
+                  type="date"
+                  min={getTodayDateString()}
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Select your preferred start date for the campaign
+                </p>
+              </div>
             )}
 
-            {/* Show calculated end date */}
-            {startDate && pricing && (
+            {getEffectiveStartDate() && pricing && (
               <div className="space-y-2">
                 <Label>End Date (Calculated)</Label>
-                <Input
-                  type="text"
-                  value={getEndDate()}
-                  disabled
-                  className="bg-muted"
-                />
+                <Input type="text" value={getEndDate()} disabled className="bg-muted" />
                 <p className="text-xs text-muted-foreground">
                   Campaign will run for {type === "coupon" ? pricing.couponDuration : pricing.adDuration} days
                 </p>
               </div>
             )}
 
-            {/* Pricing Info */}
             {pricing && (
               <div className="rounded-lg border p-4 space-y-2 bg-muted/50">
                 <div className="flex justify-between">
@@ -267,19 +366,17 @@ export default function CreateHomepagePushDialog({ open, onClose, onSuccess }) {
                   <span className="text-sm font-medium">{t("pricing.duration")}</span>
                   <span className="text-sm">{duration} {t("pricing.days")}</span>
                 </div>
-                {startDate && getEndDate() && (
+                {getEffectiveStartDate() && getEndDate() && (
                   <div className="pt-2 mt-2 border-t">
                     <div className="text-xs text-muted-foreground space-y-1">
                       <div>Campaign period:</div>
                       <div className="font-medium text-foreground">
-                        {new Date(startDate).toLocaleDateString()} - {new Date(getEndDate()).toLocaleDateString()}
+                        {new Date(getEffectiveStartDate()).toLocaleDateString()} - {new Date(getEndDate()).toLocaleDateString()}
                       </div>
                     </div>
                   </div>
                 )}
-                <p className="text-xs text-muted-foreground mt-2">
-                  {t("pricing.note")}
-                </p>
+                <p className="text-xs text-muted-foreground mt-2">{t("pricing.note")}</p>
               </div>
             )}
 
@@ -290,8 +387,8 @@ export default function CreateHomepagePushDialog({ open, onClose, onSuccess }) {
               <Button
                 type="submit"
                 disabled={
-                  submitting || 
-                  availableSlots === 0 || 
+                  submitting ||
+                  availableSlots === 0 ||
                   (type === "coupon" && (!selectedBatchId || !hasAvailableBatches))
                 }
               >

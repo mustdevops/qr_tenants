@@ -53,6 +53,59 @@ const getTodayDateString = () => {
   return `${year}-${month}-${day}`;
 };
 
+const parseDateOnlyAsLocal = (value) => {
+  if (!value) return null;
+
+  if (value instanceof Date) {
+    return new Date(
+      value.getFullYear(),
+      value.getMonth(),
+      value.getDate(),
+    );
+  }
+
+  const normalized = String(value);
+
+  if (normalized.includes("T")) {
+    const parsedDateTime = new Date(normalized);
+    if (Number.isNaN(parsedDateTime.getTime())) return null;
+    return new Date(
+      parsedDateTime.getFullYear(),
+      parsedDateTime.getMonth(),
+      parsedDateTime.getDate(),
+    );
+  }
+
+  const [year, month, day] = normalized.split("-").map(Number);
+
+  if (!year || !month || !day) {
+    const fallback = new Date(normalized);
+    return Number.isNaN(fallback.getTime())
+      ? null
+      : new Date(
+          fallback.getFullYear(),
+          fallback.getMonth(),
+          fallback.getDate(),
+        );
+  }
+
+  return new Date(year, month - 1, day);
+};
+
+const formatLocalDate = (value) => {
+  const parsed = parseDateOnlyAsLocal(value);
+  return parsed ? parsed.toLocaleDateString() : "";
+};
+
+const formatLocalDateForInput = (value) => {
+  const parsed = parseDateOnlyAsLocal(value);
+  if (!parsed) return "";
+  const year = parsed.getFullYear();
+  const month = `${parsed.getMonth() + 1}`.padStart(2, "0");
+  const day = `${parsed.getDate()}`.padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
 export default function PaidAdsSettings({ config: initialConfig, merchantId, mode = "agent" }) {
   const t = useTranslations("merchantPaidAds");
   const isSuperadminMode = mode === "superadmin";
@@ -135,7 +188,7 @@ export default function PaidAdsSettings({ config: initialConfig, merchantId, mod
               : (data.paid_ad_duration ?? 7),
             paid_ad_start_date: isSuperadminMode
               ? (data.superadmin_homepage_ad_start_date
-                  ? new Date(data.superadmin_homepage_ad_start_date).toISOString().split("T")[0]
+                  ? formatLocalDateForInput(data.superadmin_homepage_ad_start_date)
                   : getTodayDateString())
               : getTodayDateString(),
           }));
@@ -360,14 +413,14 @@ export default function PaidAdsSettings({ config: initialConfig, merchantId, mod
       return;
     }
 
-    const startDate = new Date(state.paid_ad_start_date);
+    const startDate = parseDateOnlyAsLocal(state.paid_ad_start_date);
     const endDate = new Date(startDate);
     endDate.setDate(endDate.getDate() + (state.paid_ad_duration || 7));
 
     // Check for conflicts
     const conflicts = bookedDates.filter((booking) => {
-      const bookingStart = new Date(booking.startDate);
-      const bookingEnd = new Date(booking.endDate);
+      const bookingStart = parseDateOnlyAsLocal(booking.startDate);
+      const bookingEnd = parseDateOnlyAsLocal(booking.endDate);
       // Check if date ranges overlap
       return startDate < bookingEnd && bookingStart < endDate;
     });
@@ -376,8 +429,8 @@ export default function PaidAdsSettings({ config: initialConfig, merchantId, mod
 
     if (conflicts.length > 0) {
       const conflict = conflicts[0];
-      const conflictStart = new Date(conflict.startDate).toLocaleDateString();
-      const conflictEnd = new Date(conflict.endDate).toLocaleDateString();
+      const conflictStart = formatLocalDate(conflict.startDate);
+      const conflictEnd = formatLocalDate(conflict.endDate);
       setDateConflictWarning(
         `⚠️ The selected dates conflict with an existing booking (${conflictStart} - ${conflictEnd}) for this placement. Please choose different dates or another placement.`,
       );
@@ -422,6 +475,57 @@ export default function PaidAdsSettings({ config: initialConfig, merchantId, mod
     await proceedWithSubmit();
   };
 
+  const getSettingsPayload = () =>
+    isSuperadminMode
+      ? {
+          superadmin_homepage_ad_enabled: state.paid_ads,
+          superadmin_homepage_ad_placement: state.placement || "top",
+          superadmin_homepage_ad_start_date:
+            state.paid_ad_start_date || getTodayDateString(),
+        }
+      : {
+          paid_ads: state.paid_ads,
+          paid_ad_placement: state.placement || "top",
+          paid_ad_duration: parseInt(state.paid_ad_duration || "7", 10),
+        };
+
+  const saveAdSettings = async () => {
+    await axiosInstance.patch(
+      `/merchant-settings/merchant/${merchantId}`,
+      getSettingsPayload(),
+    );
+  };
+
+  const handleSaveSettingsOnly = async () => {
+    if (!merchantId) return;
+
+    if (isCurrentAdsLocked) {
+      toast.error(currentAdsLockMessage || "Ad settings are currently locked.");
+      return;
+    }
+
+    if (dateConflictWarning) {
+      toast.error("Selected date range has a conflict. Please change date or placement.");
+      return;
+    }
+
+    setUploading(true);
+    setUploadProgress(0);
+
+    try {
+      await saveAdSettings();
+      toast.success(t("messages.settingsUpdated"));
+    } catch (error) {
+      console.error(error);
+      toast.error(
+        error?.response?.data?.message || t("messages.errorSaving"),
+      );
+    } finally {
+      setUploading(false);
+      setUploadProgress(0);
+    }
+  };
+
   const proceedWithSubmit = async () => {
     if (!merchantId) return;
 
@@ -431,21 +535,7 @@ export default function PaidAdsSettings({ config: initialConfig, merchantId, mod
 
     try {
       // 1. Update general settings (toggle, placement, duration)
-      await axiosInstance.patch(
-        `/merchant-settings/merchant/${merchantId}`,
-        isSuperadminMode
-          ? {
-              superadmin_homepage_ad_enabled: state.paid_ads,
-              superadmin_homepage_ad_placement: state.placement || "top",
-              superadmin_homepage_ad_start_date:
-                state.paid_ad_start_date || getTodayDateString(),
-            }
-          : {
-              paid_ads: state.paid_ads,
-              paid_ad_placement: state.placement || "top",
-              paid_ad_duration: parseInt(state.paid_ad_duration || "7", 10),
-            },
-      );
+      await saveAdSettings();
 
       // 2. Handle upload if pending
       if (pendingFile) {
@@ -1064,8 +1154,8 @@ export default function PaidAdsSettings({ config: initialConfig, merchantId, mod
                             {conflictingBookedDates.map((booking, idx) => (
                               <li key={idx} className="flex items-center gap-1">
                                 <span className="inline-block w-1.5 h-1.5 bg-blue-600 rounded-full"></span>
-                                {new Date(booking.startDate).toLocaleDateString()} to{" "}
-                                {new Date(booking.endDate).toLocaleDateString()}
+                                {formatLocalDate(booking.startDate)} to{" "}
+                                {formatLocalDate(booking.endDate)}
                                 {booking.status && (
                                   <span className="text-blue-600 font-medium ml-1">
                                     ({booking.status})
@@ -1474,6 +1564,29 @@ export default function PaidAdsSettings({ config: initialConfig, merchantId, mod
                             )}
                           </Button>
                         )}
+
+                        <Button
+                          variant="outline"
+                          onClick={handleSaveSettingsOnly}
+                          disabled={
+                            uploading ||
+                            toggling ||
+                            sendingRequest ||
+                            isCurrentAdsLocked ||
+                            availablePlacements.length === 0 ||
+                            !!dateConflictWarning
+                          }
+                          className="h-9 px-4 text-sm font-semibold rounded-lg w-full sm:w-auto disabled:opacity-60 disabled:cursor-not-allowed"
+                        >
+                          {uploading ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              {t("upload.uploading")}
+                            </>
+                          ) : (
+                            "Save Settings"
+                          )}
+                        </Button>
 
                         <Button
                           onClick={handleSubmit}

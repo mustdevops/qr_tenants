@@ -73,7 +73,7 @@ export default function AgentRegisterPage({ params }) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-secondary/10">
+    <div className="min-h-screen bg-linear-to-br from-primary/10 via-background to-secondary/10">
       <div className="mx-auto flex min-h-screen max-w-5xl flex-col gap-10 px-4 py-10 lg:flex-row lg:items-center">
         {/* Left summary */}
         <div className="flex-1 space-y-6">

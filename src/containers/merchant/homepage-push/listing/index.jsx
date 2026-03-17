@@ -12,6 +12,7 @@ import { toast } from "@/lib/toast";
 import { useLocale, useTranslations } from "next-intl";
 import useDebounce from "@/hooks/useDebounceRef";
 import CreateHomepagePushDialog from "./create-dialog";
+import { useSession } from "next-auth/react";
 import {
   Dialog,
   DialogContent,
@@ -158,6 +159,8 @@ const HomepagePushColumns = (t, onViewDetails, onProcessPayment) => [
 
 export default function HomepagePushListing() {
   const t = useTranslations("merchantHomepagePush");
+  const { data: session } = useSession();
+  const merchantId = session?.user?.merchantId;
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(10);
   const [search, setSearch] = useState("");
@@ -301,6 +304,7 @@ export default function HomepagePushListing() {
 
       <CreateHomepagePushDialog
         open={createDialogOpen}
+        merchantId={merchantId}
         onClose={() => setCreateDialogOpen(false)}
         onSuccess={() => {
           setCreateDialogOpen(false);

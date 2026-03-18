@@ -4,6 +4,7 @@ import AgentLandingPage from "@/app/[locale]/homepage/agent";
 import React, { useEffect, useState } from "react";
 import axiosInstance from "@/lib/axios";
 import { Loader2 } from "lucide-react";
+import { Link } from "@/i18n/routing";
 
 const normalizeAgentPathKey = (value) =>
   String(value || "")
@@ -92,12 +93,12 @@ export default function AgentHomepageById({ params }) {
           <p className="text-slate-500 mb-4">
             {error || "Unable to find the requested agent"}
           </p>
-          <a
-            href="/homepage"
+          <Link
+            href="/"
             className="text-primary hover:underline font-medium"
           >
             Return to homepage
-          </a>
+          </Link>
         </div>
       </div>
     );

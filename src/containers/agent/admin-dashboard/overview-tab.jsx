@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
+import { useRouter } from "@/i18n/routing";
 import axiosInstance from "@/lib/axios";
 import {
   Calendar as CalendarIcon,
@@ -17,6 +18,7 @@ import {
   Zap,
   Gift,
   Award,
+  Edit,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -60,6 +62,7 @@ const formatDisplayDate = (date) => {
 export default function AdminOverviewTab() {
   const t = useTranslations("agentDashboard.overview");
   const { data: session } = useSession();
+  const router = useRouter();
   const adminId = session?.adminId;
 
   // Date State
@@ -148,13 +151,23 @@ export default function AdminOverviewTab() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-2 border-b">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b">
         <div className="flex items-center gap-2">
           {loading && (
             <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
           )}
         </div>
 
+        <Button
+          onClick={() => router.push("/agent/homepage")}
+          className="bg-indigo-600 hover:bg-indigo-700"
+        >
+          <Edit className="w-4 h-4 mr-2" />
+          Edit Landing Page
+        </Button>
+      </div>
+
+      <div className="flex flex-col sm:flex-row items-center justify-end gap-4 py-2 border-b">
         <div className="flex items-center gap-2">
           <Select value={filterType} onValueChange={handlePresetChange}>
             <SelectTrigger className="w-40">

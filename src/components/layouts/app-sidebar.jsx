@@ -102,9 +102,14 @@ export function AppSidebar({
       icon: MessageSquare,
     },
     {
+      title: "Landing Page Editor",
+      url: "/agent/homepage",
+      icon: Home,
+    },
+    {
       title: tSidebar("agent.homepagePush"),
       url: "/agent/homepage-push",
-      icon: Home,
+      icon: Megaphone,
     },
     {
       title: tSidebar("agent.logs"),

@@ -108,6 +108,17 @@ export default function MasterAdminLandingPage() {
     return mapped[normalized] || normalized || "top";
   };
 
+  const buildCompanyPathKey = (companyName) => {
+    const normalized = String(companyName || "")
+      .trim()
+      .replace(/\s+/g, "-")
+      .replace(/[^a-zA-Z0-9-]/g, "")
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, "");
+
+    return normalized;
+  };
+
   // Pagination State
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -179,6 +190,7 @@ export default function MasterAdminLandingPage() {
           .slice(0, 6) // Ensure max 6 agents per page
           .map((agent) => ({
             id: agent.id,
+            slug: agent.slug || null,
             name: agent.name || agent.user?.name || t("fallback.unknownAgent"),
             email: agent.email || agent.user?.email,
             location:
@@ -320,12 +332,10 @@ export default function MasterAdminLandingPage() {
   }, [debouncedSearchQuery, fetchAgents, selectedCountry, expiringSoon]);
 
   const handleAgentClick = (agent) => {
-    console.log("Clicked agent:", agent);
-    // clean agernt name for URL (remove spaces and special characters)
-    const cleanCompanyName = agent.company_name.replace(/\s+/g, "-").replace(/[^a-zA-Z0-9-]/g, "");
-
-    router.push(`/homepage/${cleanCompanyName}`);
-
+    const companyPathKey = buildCompanyPathKey(agent?.company_name);
+    const routeKey = companyPathKey || agent?.slug || agent?.id;
+    if (!routeKey) return;
+    router.push(`/homepage/${routeKey}`);
   };
 
   // Filtered + paginated coupons

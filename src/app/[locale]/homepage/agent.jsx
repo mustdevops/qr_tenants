@@ -36,6 +36,7 @@ import {
   MerchantDetail,
 } from "./components/MerchantMarketplace";
 import { CouponForm } from "./components/CouponForm";
+import DynamicLandingPageSections from "@/components/homepage/DynamicLandingPageSections";
 import { cn } from "@/lib/utils";
 import { toast } from "@/lib/toast";
 
@@ -113,6 +114,7 @@ export default function AgentLandingPage({ agentId: agentIdProp } = {}) {
 
   // Paid Ads
   const [paidAds, setPaidAds] = useState([]);
+  const [footerTitle, setFooterTitle] = useState("");
 
   // Coupon Dialog State
   const [couponDialogOpen, setCouponDialogOpen] = useState(false);
@@ -169,6 +171,22 @@ export default function AgentLandingPage({ agentId: agentIdProp } = {}) {
       console.warn(t("errors.failedToLoadPaidAds"), err);
     }
   }, [agentId, t]);
+
+  // Fetch dynamic footer title for the brand block in footer
+  const fetchFooterTitle = useCallback(async () => {
+    if (!agentId) return;
+
+    try {
+      const response = await axiosInstance.get(
+        `/agent-landing-pages/public/${agentId}`,
+      );
+      const dynamicFooterTitle = response?.data?.data?.footer_title;
+      setFooterTitle(dynamicFooterTitle || "");
+    } catch (err) {
+      console.warn("Failed to load dynamic footer title:", err);
+      setFooterTitle("");
+    }
+  }, [agentId]);
 
   // Fetch Merchants with Pagination
   const fetchMerchants = useCallback(
@@ -333,6 +351,9 @@ export default function AgentLandingPage({ agentId: agentIdProp } = {}) {
 
         // 3. Fetch Ads
         await fetchPaidAds();
+
+        // 4. Fetch dynamic footer title
+        await fetchFooterTitle();
       } catch (err) {
         console.error(t("errors.failedToLoadData"), err);
         setError(t("errors.unableToLoadPage"));
@@ -351,6 +372,7 @@ export default function AgentLandingPage({ agentId: agentIdProp } = {}) {
     expiringSoon,
     fetchAgentProfile,
     fetchPaidAds,
+    fetchFooterTitle,
     fetchMerchants,
     t,
   ]);
@@ -803,7 +825,7 @@ export default function AgentLandingPage({ agentId: agentIdProp } = {}) {
             </Sheet>
           )}
         </section>
-        {/* -- Features Section -- */}
+        {/* -- Dynamic Features Section -- */}
         <section
           className="bg-white py-24 border-t border-slate-100 relative mb-30"
           id="features"
@@ -828,64 +850,8 @@ export default function AgentLandingPage({ agentId: agentIdProp } = {}) {
               </div>
             )}
 
-            <div className="text-center max-w-2xl mx-auto mb-16">
-              <Badge
-                variant="outline"
-                className="mb-4 text-slate-400 border-slate-200"
-              >
-                {t("features.badge")}
-              </Badge>
-              <h2 className="text-3xl font-black tracking-tight sm:text-4xl mb-4 text-slate-900">
-                {t("features.title")}
-              </h2>
-              <p className="text-slate-500 text-lg">
-                {t("features.description")}
-              </p>
-            </div>
-
-            {/* Features Grid - Centered */}
-            <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-              {[
-                {
-                  icon: Smartphone,
-                  color: "text-blue-600",
-                  bg: "bg-blue-50",
-                  h: t("features.instantFeedback.title"),
-                  d: t("features.instantFeedback.description"),
-                },
-                {
-                  icon: TrendingUp,
-                  color: "text-orange-600",
-                  bg: "bg-orange-50",
-                  h: t("features.smartCoupons.title"),
-                  d: t("features.smartCoupons.description"),
-                },
-                {
-                  icon: Globe,
-                  color: "text-green-600",
-                  bg: "bg-green-50",
-                  h: t("features.globalReach.title"),
-                  d: t("features.globalReach.description"),
-                },
-              ].map((fet, i) => (
-                <div
-                  key={i}
-                  className="bg-white p-8 rounded-4xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_50px_rgba(0,0,0,0.06)] hover:-translate-y-1 transition-all duration-500"
-                >
-                  <div
-                    className={`h-14 w-14 rounded-2xl ${fet.bg} ${fet.color} flex items-center justify-center mb-6`}
-                  >
-                    <fet.icon className="h-7 w-7" />
-                  </div>
-                  <h3 className="text-xl font-bold mb-3 text-slate-900">
-                    {fet.h}
-                  </h3>
-                  <p className="text-slate-500 font-medium leading-relaxed">
-                    {fet.d}
-                  </p>
-                </div>
-              ))}
-            </div>
+            {/* Render dynamic landing page content or fallback to default features */}
+            <DynamicLandingPageSections adminId={agentId} />
           </div>
         </section>
       </main>
@@ -926,16 +892,16 @@ export default function AgentLandingPage({ agentId: agentIdProp } = {}) {
                 {tCommon("brandName")}
               </span>
               <span className="text-xs text-slate-500">
-                {t("footer.globalMerchantNetwork")}
+                {footerTitle || t("footer.globalMerchantNetwork")}
               </span>
             </div>
           </div>
 
           <div className="flex gap-8 text-sm font-bold">
-            <Link href="#" className="hover:text-white transition">
+            <Link href="/privacy-policy" className="hover:text-white transition">
               {t("footer.privacyPolicy")}
             </Link>
-            <Link href="#" className="hover:text-white transition">
+            <Link href="/terms-and-conditions" className="hover:text-white transition">
               {t("footer.termsOfService")}
             </Link>
             <Link href="#" className="hover:text-white transition">

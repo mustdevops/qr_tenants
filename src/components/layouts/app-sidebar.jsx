@@ -102,9 +102,14 @@ export function AppSidebar({
       icon: MessageSquare,
     },
     {
+      title: "Landing Page Editor",
+      url: "/agent/homepage",
+      icon: Home,
+    },
+    {
       title: tSidebar("agent.homepagePush"),
       url: "/agent/homepage-push",
-      icon: Home,
+      icon: Megaphone,
     },
     {
       title: tSidebar("agent.logs"),
@@ -249,6 +254,18 @@ export function AppSidebar({
       title: tSidebar("masterAdmin.settings"),
       url: "/master-admin/superadmin_settings",
       icon: Settings,
+      allowedStaff: ["super_admin"],
+    },
+    {
+      title: "Privacy Policy",
+      url: "/master-admin/privacy-policy",
+      icon: FileText,
+      allowedStaff: ["super_admin"],
+    },
+    {
+      title: "Terms & Conditions",
+      url: "/master-admin/terms-and-conditions",
+      icon: FileText,
       allowedStaff: ["super_admin"],
     },
     {

@@ -122,7 +122,12 @@ export default function ProtectedLayout({ children, params }) {
         const subPath = parts[2] || ""; // /master-admin/[subPath]
         const rolePermissions = {
           support_staff: ["support", "dashboard", "support-staff"],
-          ad_approver: ["approvals", "dashboard", "ad-approver"],
+          ad_approver: [
+            "approvals",
+            "dashboard",
+            "ad-approver",
+            "homepage-push",
+          ],
           finance_viewer: ["statements", "commission", "dashboard", "finance-viewer"],
         };
 

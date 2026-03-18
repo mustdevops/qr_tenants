@@ -4,6 +4,17 @@ import AgentLandingPage from "@/app/[locale]/homepage/agent";
 import React, { useEffect, useState } from "react";
 import axiosInstance from "@/lib/axios";
 import { Loader2 } from "lucide-react";
+import { Link } from "@/i18n/routing";
+
+const normalizeAgentPathKey = (value) =>
+  String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/[%]+/g, "")
+    .replace(/[_\s]+/g, "-")
+    .replace(/[^a-z0-9-]/g, "")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
 
 export default function AgentHomepageById({ params }) {
   const [agentId, setAgentId] = useState(null);
@@ -15,7 +26,7 @@ export default function AgentHomepageById({ params }) {
       try {
         // Unwrap params for Next.js 15+
         const resolvedParams = await params;
-        const companyNameFromUrl = resolvedParams.agentId;
+        const companyNameFromUrl = decodeURIComponent(resolvedParams.agentId || "");
 
         // Check if it's already a numeric ID
         if (!isNaN(companyNameFromUrl)) {
@@ -34,11 +45,15 @@ export default function AgentHomepageById({ params }) {
 
         const agentsData = response.data?.data?.admins || [];
 
-        // Find agent by company name (case-insensitive match)
+        const normalizedPathKey = normalizeAgentPathKey(companyNameFromUrl);
+
+        // Find agent by slug/company_name (normalized match)
         const matchingAgent = agentsData.find(
-          (agent) =>
-            agent.company_name?.toLowerCase() ===
-            companyNameFromUrl.toLowerCase(),
+          (agent) => {
+            const slugKey = normalizeAgentPathKey(agent?.slug);
+            const companyKey = normalizeAgentPathKey(agent?.company_name);
+            return slugKey === normalizedPathKey || companyKey === normalizedPathKey;
+          },
         );
 
         if (matchingAgent && matchingAgent.id) {
@@ -78,9 +93,12 @@ export default function AgentHomepageById({ params }) {
           <p className="text-slate-500 mb-4">
             {error || "Unable to find the requested agent"}
           </p>
-          <a href="/" className="text-primary hover:underline font-medium">
+          <Link
+            href="/"
+            className="text-primary hover:underline font-medium"
+          >
             Return to homepage
-          </a>
+          </Link>
         </div>
       </div>
     );

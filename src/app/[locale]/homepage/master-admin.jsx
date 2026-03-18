@@ -320,7 +320,12 @@ export default function MasterAdminLandingPage() {
   }, [debouncedSearchQuery, fetchAgents, selectedCountry, expiringSoon]);
 
   const handleAgentClick = (agent) => {
-    router.push(`/homepage/${agent.company_name}`);
+    console.log("Clicked agent:", agent);
+    // clean agernt name for URL (remove spaces and special characters)
+    const cleanCompanyName = agent.company_name.replace(/\s+/g, "-").replace(/[^a-zA-Z0-9-]/g, "");
+
+    router.push(`/homepage/${cleanCompanyName}`);
+
   };
 
   // Filtered + paginated coupons

@@ -331,6 +331,14 @@ export default function MasterAdminLandingPage() {
     fetchAgents(1, true);
   }, [debouncedSearchQuery, fetchAgents, selectedCountry, expiringSoon]);
 
+  const toSlug = (name) =>
+    name
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-");
+
   const handleAgentClick = (agent) => {
     const companyPathKey = buildCompanyPathKey(agent?.company_name);
     const routeKey = companyPathKey || agent?.slug || agent?.id;

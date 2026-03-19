@@ -496,8 +496,7 @@ export default function MasterAdminLandingPage() {
           )}
         </section>
         {/* -- Super Admin Homepage Placements (Coupon Batches + Left Ad) -- */}
-        {(homepageCoupons.length > 0 || leftHomepageAd) && (
-          <section className="bg-white py-20 border-t border-slate-100">
+        <section className="bg-white py-20 border-t border-slate-100">
             <div className="px-6 lg:px-10 max-w-[1600px] mx-auto">
               <div className="grid grid-cols-1 xl:grid-cols-12 gap-10 items-start">
                 {/* Left sidebar ad */}
@@ -823,7 +822,6 @@ export default function MasterAdminLandingPage() {
               </div>
             </div>
           </section>
-        )}
 
         {/* -- Main Content Area (Agent Directory) -- */}
         <section
